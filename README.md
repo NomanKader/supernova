@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿# Supernova LMS Admin Portal
+
+A Next.js + Tailwind (shadcn UI) admin console for managing users, courses, lessons, manual enrollments, assessments, certification workflows, promotions, and marketing pages for the Supernova learning platform.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visit http://localhost:3000 to view the dashboard. Sign-in flows are stubbed; the interface renders with mock data stored in `src/data/mock-data.ts`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- Next.js App Router (React 19)
+- Tailwind CSS v4 with shadcn UI components (manually curated under `src/components/ui`)
+- lucide-react iconography and Radix primitives
+- @tanstack/react-table, react-hook-form, zod for data grids and forms
+- recharts for dashboard visualizations
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+src/
+  app/(dashboard)/*           # Route group for the admin experience
+  components/layout           # App shell, navigation, headers
+  components/ui               # shadcn-inspired primitives
+  components/dashboard        # Dashboard-specific widgets
+  data/mock-data.ts           # Mock domain models (replace with real API)
+  types                       # Shared TypeScript interfaces
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Each feature vertical lives at `src/app/(dashboard)/<section>/page.tsx` with lightweight forms and tables already wired to the mock data.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Customization Notes
 
-## Deploy on Vercel
+- Tailwind theme tokens live in `tailwind.config.ts` and `src/app/globals.css`.
+- shadcn components are hand-copied to avoid CLI network access; adjust as needed when integrating with a design system.
+- Replace mock data with server data by swapping in loaders (Server Components) or client fetch hooks.
+- `DataTable` in `src/components/data-table.tsx` centralizes search + pagination for all resource tables.
+- Charts on the overview page use hard-coded analytics—replace with live metrics as telemetry becomes available.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Next Steps
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Hook routes into real APIs and persist form submissions.
+2. Add authentication/authorization guard around the dashboard shell.
+3. Introduce optimistic mutations & toasts for action feedback.
+4. Wire up file upload endpoints for lesson assets and payment proofs.
+5. Automate certificate PDF generation and storage integration.
+
+## Scripts
+
+```bash
+npm run dev      # start development server
+npm run build    # production build
+npm run start    # run built app
+npm run lint     # lint with ESLint
+```
