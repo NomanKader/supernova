@@ -12,6 +12,8 @@ const navItems = [
   { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
+  { label: 'Promotions', to: '/promotions' },
+  { label: 'Affiliate Program', to: '/affiliate-program' },
 ];
 
 export function SiteHeader() {
@@ -131,3 +133,4 @@ export function SiteHeader() {
     </header>
   );
 }
+

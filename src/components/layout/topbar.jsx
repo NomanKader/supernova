@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom';
+﻿import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, Menu, Plus, Search, UserCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,12 @@ import { ThemeToggle } from '@/components/theme-toggle';
 import { navLinks } from '@/config/navigation';
 
 export function AppTopbar() {
+  const navigate = useNavigate();
   const location = useLocation();
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminToken');
+    navigate('/admin/login', { replace: true });
+  };
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur">
@@ -66,19 +71,33 @@ export function AppTopbar() {
         <Button variant="ghost" size="icon" aria-label="Notifications">
           <Bell className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="hidden items-center gap-2 md:flex"
-          aria-label="View profile"
-        >
-          <UserCircle className="h-5 w-5" />
-          <span className="text-sm font-medium">Admin</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="items-center gap-2"
+              aria-label="View profile"
+            >
+              <UserCircle className="h-5 w-5" />
+              <span className="text-sm font-medium">Admin</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
+            <DropdownMenuLabel>Account</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
 }
+
+
+
+
+
 
 
 

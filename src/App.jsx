@@ -17,12 +17,15 @@ import CoursesAdminPage from '@/pages/courses';
 import DashboardPage from '@/pages/dashboard';
 import EnrollPage from '@/pages/enroll';
 import EnrollmentsPage from '@/pages/enrollments';
+import AdminLoginPage from '@/pages/admin-login';
 import HomePage from '@/pages/home';
 import LessonsPage from '@/pages/lessons';
 import LoginPage from '@/pages/login';
 import PrivacyPage from '@/pages/privacy';
 import ProgressPage from '@/pages/progress';
 import PromotionsPage from '@/pages/promotions';
+import MarketingPromotionsPage from '@/pages/marketing-promotions';
+import AffiliateProgramPage from '@/pages/affiliate-program';
 import ReferralsPage from '@/pages/referrals';
 import RegisterPage from '@/pages/register';
 import TermsPage from '@/pages/terms';
@@ -46,7 +49,11 @@ function App() {
               <Route path="/enroll/:courseId" element={<EnrollPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/terms" element={<TermsPage />} />
+              <Route path="/promotions" element={<MarketingPromotionsPage />} />
+              <Route path="/affiliate-program" element={<AffiliateProgramPage />} />
             </Route>
+
+            <Route path="/admin/login" element={<AdminLoginPage />} />
 
             <Route path="/admin" element={<AppShell />}>
               <Route index element={<DashboardPage />} />
@@ -70,6 +77,10 @@ function App() {
 }
 
 export default App;
+
+
+
+
 
 
 
