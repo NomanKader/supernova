@@ -1,11 +1,12 @@
 ﻿import { Link, NavLink } from 'react-router-dom';
-import { Menu, Rocket, X } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import * as React from 'react';
 
 import { useAuth } from '@/components/marketing/auth-context';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import logoImg from '@/assets/logo.jpg';
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -29,10 +30,12 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
-        <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <Rocket className="h-5 w-5" />
-          </span>
+        <Link to="/" className="flex items-center gap-3 text-lg font-semibold">
+          <img
+            src={logoImg}
+            alt="Supernova logo"
+            className="h-12 w-auto rounded-md border border-border bg-white object-contain"
+          />
           Supernova LMS
         </Link>
         <nav className="hidden items-center gap-6 text-sm font-medium md:flex">

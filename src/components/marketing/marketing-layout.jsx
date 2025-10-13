@@ -1,16 +1,16 @@
 ﻿import { Outlet } from 'react-router-dom';
 
-import { SiteFooter } from '@/components/marketing/site-footer';
-import { SiteHeader } from '@/components/marketing/site-header';
+import { FooterComponent } from '@/components/FooterComponent';
+import { NavigationBarComponent } from '@/components/NavigationBarComponent';
 
 export function MarketingLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
+      <NavigationBarComponent />
       <main className="flex-1">
         <Outlet />
       </main>
-      <SiteFooter />
+      <FooterComponent />
     </div>
   );
 }

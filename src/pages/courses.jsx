@@ -1,4 +1,4 @@
-﻿import * as React from 'react';
+import * as React from 'react';
 import { BookMarked, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -126,25 +126,28 @@ export default function CoursesPage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>New course blueprint</DialogTitle>
-              <DialogDescription>Define the core metadata to start lesson production.</DialogDescription>
+              <DialogTitle>Draft new course</DialogTitle>
+              <DialogDescription>
+                Start a new course blueprint. You can add lessons and assets after saving.
+              </DialogDescription>
             </DialogHeader>
+
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Launch resilient APIs" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid gap-4 md:grid-cols-2">
+              <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="sm:col-span-2">
+                        <FormLabel>Course title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g. Design systems masterclass" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <FormField
                     control={form.control}
                     name="categoryId"

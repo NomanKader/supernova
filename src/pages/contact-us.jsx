@@ -31,6 +31,10 @@ export default function ContactUsPage() {
     defaultValues,
   });
 
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, []);
+
   const onSubmit = (values) => {
     console.log('Contact request', values);
     form.reset(defaultValues);

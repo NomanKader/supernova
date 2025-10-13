@@ -1,0 +1,1 @@
+            <p>© {new Date().getFullYear()} Supernova LMS. All rights reserved.</p>
