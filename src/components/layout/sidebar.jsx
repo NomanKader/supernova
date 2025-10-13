@@ -1,21 +1,17 @@
-﻿import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { navLinks } from "@/config/navigation";
+import logo from "@/assets/logo.jpg";
 
 export function AppSidebar() {
   const location = useLocation();
-
   return (
     <aside className="hidden min-h-screen w-[240px] border-r bg-card p-4 lg:flex lg:flex-col">
-      <div className="flex items-center gap-2 px-2">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground font-semibold">
-          SN
-        </div>
-        <div>
-          <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Supernova LMS</p>
-          <p className="text-lg font-semibold">Admin</p>
+      <div className="px-2 py-3">
+        <div className="w-full overflow-hidden rounded-2xl border border-white/70 bg-white shadow-lg shadow-blue-100">
+          <img src={logo} alt="Supernova" className="w-full object-contain" />
         </div>
       </div>
       <nav className="mt-8 space-y-1">
