@@ -1,9 +1,10 @@
-﻿import { Link, NavLink } from 'react-router-dom';
+﻿import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import * as React from 'react';
 
 import logoImg from '@/assets/logo.jpg';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/components/marketing/auth-context';
 
 const navItems = [
   { label: 'Home', to: '/' },
@@ -16,6 +17,23 @@ const navItems = [
 
 export function NavigationBarComponent() {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
+
+  const initials = React.useMemo(() => {
+    if (user?.email && typeof user.email === 'string') {
+      return user.email.trim().charAt(0).toUpperCase();
+    }
+    return 'U';
+  }, [user?.email]);
+
+  const emailLabel = user?.email ?? 'Account';
+
+  const handleLogout = React.useCallback(() => {
+    logout();
+    setOpen(false);
+    navigate('/');
+  }, [logout, navigate]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/60 bg-white/95 backdrop-blur">
@@ -42,15 +60,46 @@ export function NavigationBarComponent() {
         </nav>
 
         <div className="hidden items-center gap-6 md:flex">
-          <Link to="/login" className="text-sm font-semibold text-cyan-600 transition hover:text-blue-600">
-            Sign In
-          </Link>
-          <Link
-            to="/get-started"
-            className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
-          >
-            Get Started
-          </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/courses"
+                className="relative inline-flex items-center pb-2 text-sm font-semibold text-cyan-600 transition hover:text-blue-600"
+              >
+                My Courses
+              </Link>
+              <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-3 py-1.5 shadow-sm">
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-semibold text-white shadow-md">
+                  {initials}
+                </span>
+                <div className="flex min-w-0 flex-col">
+                  <span className="text-xs font-medium text-slate-500">Signed in</span>
+                  <span className="max-w-[160px] truncate text-xs font-semibold text-slate-700">
+                    {emailLabel}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-xs font-semibold text-cyan-600 transition hover:text-blue-600"
+                >
+                  Log out
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/login" className="text-sm font-semibold text-cyan-600 transition hover:text-blue-600">
+                Sign In
+              </Link>
+              <Link
+                to="/get-started"
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -82,20 +131,50 @@ export function NavigationBarComponent() {
               </NavLink>
             ))}
             <div className="mt-3 flex flex-col gap-2">
-              <Link
-                to="/login"
-                onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
-              >
-                Sign In
-              </Link>
-              <Link
-                to="/get-started"
-                onClick={() => setOpen(false)}
-                className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:from-cyan-600 hover:to-blue-700"
-              >
-                Get Started
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center gap-3 rounded-lg border border-cyan-100 bg-cyan-50/40 px-3 py-2">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 text-sm font-semibold text-white">
+                      {initials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-700">{emailLabel}</p>
+                      <p className="text-xs text-slate-500">Signed in</p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/courses"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
+                  >
+                    My Courses
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/get-started"
+                    onClick={() => setOpen(false)}
+                    className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:from-cyan-600 hover:to-blue-700"
+                  >
+                    Get Started
+                  </Link>
+                </>
+              )}
             </div>
           </nav>
         </div>
@@ -103,3 +182,4 @@ export function NavigationBarComponent() {
     </header>
   );
 }
+

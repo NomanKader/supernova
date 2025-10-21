@@ -17,6 +17,7 @@ import CoursesAdminPage from '@/pages/courses';
 import DashboardPage from '@/pages/dashboard';
 import EnrollPage from '@/pages/enroll';
 import EnrollmentsPage from '@/pages/enrollments';
+import AccountVerifyPage from '@/pages/account/verify';
 import GetStartedPage from '@/pages/get-started';
 import AdminLoginPage from '@/pages/admin-login';
 import HomePage from '@/pages/home';
@@ -53,6 +54,8 @@ function App() {
               <Route path="/promotions" element={<MarketingPromotionsPage />} />
               <Route path="/affiliate-program" element={<AffiliateProgramPage />} />
               <Route path="/get-started" element={<GetStartedPage />} />
+              <Route path="/account/verify" element={<AccountVerifyPage />} />
+              <Route path="/accept-invite" element={<AccountVerifyPage />} />
             </Route>
 
             <Route path="/admin/login" element={<AdminLoginPage />} />

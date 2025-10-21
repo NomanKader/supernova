@@ -1,8 +1,8 @@
 ﻿import * as React from 'react';
-import { Plus, ShieldQuestion } from 'lucide-react';
-import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2, Plus, ShieldQuestion, Trash2 } from 'lucide-react';
+import { useForm } from 'react-hook-form';
 
 import { DataTable } from '@/components/data-table';
 import { PageHeader } from '@/components/layout/page-header';
@@ -35,35 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { users } from '@/data/mock-data';
-
-const userColumns = [
-  {
-    header: 'Name',
-    accessorKey: 'name',
-    cell: ({ row }) => (
-      <div>
-        <p className="font-medium">{row.original.name}</p>
-        <p className="text-xs text-muted-foreground">{row.original.email}</p>
-      </div>
-    ),
-  },
-  {
-    header: 'Role',
-    accessorKey: 'role',
-    cell: ({ row }) => <span className="capitalize">{row.original.role}</span>,
-  },
-  {
-    header: 'Status',
-    accessorKey: 'status',
-    cell: ({ row }) => <StatusBadge status={row.original.status} />,
-  },
-  {
-    header: 'Joined',
-    accessorKey: 'joinedAt',
-    cell: ({ row }) => new Date(row.original.joinedAt).toLocaleDateString(),
-  },
-];
+import { apiFetch, BUSINESS_NAME } from '@/config/api';
 
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
@@ -81,16 +53,179 @@ const defaultValues = {
 
 export default function UsersPage() {
   const [open, setOpen] = React.useState(false);
+  const [users, setUsers] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [fetchError, setFetchError] = React.useState(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState(null);
+  const [deletingId, setDeletingId] = React.useState(null);
+  const [deleteError, setDeleteError] = React.useState(null);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
 
-  const onSubmit = (values) => {
-    console.log('Invite user', values);
-    setOpen(false);
-    form.reset(defaultValues);
+  const loadUsers = React.useCallback(async () => {
+    setIsLoading(true);
+    setFetchError(null);
+    setDeleteError(null);
+
+    try {
+      const searchParams = new URLSearchParams();
+      if (BUSINESS_NAME) {
+        searchParams.set('businessName', BUSINESS_NAME);
+      }
+
+      const query = searchParams.toString();
+      const response = await apiFetch(`/api/users${query ? `?${query}` : ''}`);
+      setUsers(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      setFetchError(error.message || 'Failed to load users.');
+      setUsers([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [BUSINESS_NAME]);
+
+  React.useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
+
+  React.useEffect(() => {
+    if (!open) {
+      setSubmitError(null);
+      form.reset(defaultValues);
+    }
+  }, [open, form]);
+
+  const onSubmit = async (values) => {
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    try {
+      await apiFetch('/api/users', {
+        method: 'POST',
+        body: JSON.stringify({
+          ...values,
+          businessName: BUSINESS_NAME,
+        }),
+      });
+
+      await loadUsers();
+      setOpen(false);
+    } catch (error) {
+      setSubmitError(error.message || 'Failed to invite user.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  const handleDelete = React.useCallback(
+    async (user) => {
+      if (!user || !user.id) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to remove ${user.name || user.email} from this workspace?`,
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      setDeleteError(null);
+      setDeletingId(user.id);
+
+      try {
+        const params = new URLSearchParams();
+        if (BUSINESS_NAME) {
+          params.set('businessName', BUSINESS_NAME);
+        }
+
+        const query = params.toString();
+        await apiFetch(`/api/users/${user.id}${query ? `?${query}` : ''}`, {
+          method: 'DELETE',
+        });
+
+        setUsers((prev) => prev.filter((item) => item.id !== user.id));
+      } catch (error) {
+        setDeleteError(error.message || 'Failed to delete user.');
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [BUSINESS_NAME],
+  );
+
+  const columns = React.useMemo(
+    () => [
+      {
+        header: 'Name',
+        accessorKey: 'name',
+        cell: ({ row }) => (
+          <div>
+            <p className="font-medium">{row.original.name}</p>
+            <p className="text-xs text-muted-foreground">{row.original.email}</p>
+          </div>
+        ),
+      },
+      {
+        header: 'Role',
+        accessorKey: 'role',
+        cell: ({ row }) => <span className="capitalize">{row.original.role}</span>,
+      },
+      {
+        header: 'Status',
+        accessorKey: 'status',
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      },
+      {
+        header: 'Joined',
+        accessorKey: 'joinedAt',
+        cell: ({ row }) =>
+          row.original.joinedAt ? new Date(row.original.joinedAt).toLocaleDateString() : '—',
+      },
+      {
+        header: 'Actions',
+        id: 'actions',
+        cell: ({ row }) => {
+          const currentUser = row.original;
+          const isDeleting = deletingId === currentUser.id;
+
+          return (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-destructive hover:text-destructive focus-visible:ring-destructive"
+                onClick={() => handleDelete(currentUser)}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Trash2 className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [deletingId, handleDelete],
+  );
+
+  const directorySummary = React.useMemo(() => {
+    if (isLoading) {
+      return 'Loading directory...';
+    }
+    if (fetchError) {
+      return 'Unable to load users.';
+    }
+    return `${users.length} members across instructors and students.`;
+  }, [isLoading, fetchError, users.length]);
 
   return (
     <div className="space-y-6">
@@ -109,6 +244,11 @@ export default function UsersPage() {
               <DialogTitle>Invite a user</DialogTitle>
               <DialogDescription>Send workspace access to instructors or learners.</DialogDescription>
             </DialogHeader>
+            {submitError ? (
+              <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {submitError}
+              </div>
+            ) : null}
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -175,8 +315,8 @@ export default function UsersPage() {
                   )}
                 />
                 <DialogFooter>
-                  <Button type="submit" className="w-full">
-                    Send invite
+                  <Button type="submit" className="w-full" disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'Send invite'}
                   </Button>
                 </DialogFooter>
               </form>
@@ -189,15 +329,26 @@ export default function UsersPage() {
         <header className="flex flex-col gap-2 border-b pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-lg font-semibold">Directory</h2>
-            <p className="text-sm text-muted-foreground">
-              {users.length} members across instructors and students.
-            </p>
+            <p className="text-sm text-muted-foreground">{directorySummary}</p>
           </div>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ShieldQuestion className="h-4 w-4" /> Bulk permissions
-          </Button>
         </header>
-        <DataTable columns={userColumns} data={users} searchPlaceholder="Search users" />
+        {fetchError ? (
+          <div className="py-6 text-sm text-destructive">{fetchError}</div>
+        ) : (
+          <>
+            {deleteError ? (
+              <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {deleteError}
+              </div>
+            ) : null}
+
+            {isLoading ? (
+              <div className="py-6 text-sm text-muted-foreground">Loading users...</div>
+            ) : (
+              <DataTable columns={columns} data={users} searchPlaceholder="Search users" />
+            )}
+          </>
+        )}
       </div>
     </div>
   );

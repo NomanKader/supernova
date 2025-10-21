@@ -11,6 +11,10 @@ npm run dev
 
 Visit http://localhost:3000 to view the dashboard. Sign-in flows are stubbed; the interface renders with mock data stored in `src/data/mock-data.ts`.
 
+## API Integration
+
+To connect the admin UI to the Express backend, configure `.env` using `.env.example` (set `VITE_API_BASE_URL` and `VITE_BUSINESS_NAME`) and follow the steps in `docs/backend-integration.md`. The `/admin/users` route now talks to `GET/POST/DELETE /api/users`, and invited members complete their password setup via `/account/verify?token=...`, which calls `GET /api/users/invites/:token` and `POST /api/users/invites/accept`.
+
 ## Tech Stack
 
 - Next.js App Router (React 19)

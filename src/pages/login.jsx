@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GraduationCap } from "lucide-react";
@@ -42,6 +42,10 @@ function AuthButton({
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, []);
   const {
     register,
     handleSubmit,
@@ -166,4 +170,5 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
