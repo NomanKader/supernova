@@ -1,0 +1,41 @@
+[
+  {
+    "id": "79c00833-b3d2-43fb-b3bf-61f211b8536a",
+    "courseId": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
+    "lessonNumber": 1,
+    "title": "Lesson 1: Introduction to React and Component-Based Architecture",
+    "description": "In this lesson, learners will explore what React is, why it’s so popular, and how it simplifies modern web development. They’ll understand the concept of component-based architecture and how it promotes code reusability and scalability. By the end of this lesson, learners will set up their React environment and create their first functional component.",
+    "videoFilename": "carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813326218.mp4",
+    "videoUrl": "/assets/lessons/supernova/fbe869d6-749f-4056-86c6-6d0b22b76ecd/carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813326218.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T08:35:26.918Z"
+  },
+  {
+    "id": "146278d1-d773-4236-9ca4-5e386e30abcd",
+    "courseId": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
+    "lessonNumber": 2,
+    "title": "Lesson 2: Working with State, Props, and Hooks",
+    "description": "This lesson focuses on one of the most powerful features of React—managing dynamic data through state and props. Learners will discover how information flows between components and how to use built-in hooks like useState and useEffect to make applications interactive and responsive. Practical examples will reinforce how to handle user input and side effects effectively.",
+    "videoFilename": "carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813326984.mp4",
+    "videoUrl": "/assets/lessons/supernova/fbe869d6-749f-4056-86c6-6d0b22b76ecd/carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813326984.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T08:35:27.267Z"
+  },
+  {
+    "id": "31b4502d-0dc7-489d-a146-8ed479e36d1a",
+    "courseId": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
+    "lessonNumber": 3,
+    "title": "Lesson 3: API Integration and Data Handling in React",
+    "description": "In this lesson, learners will gain hands-on experience connecting React applications to real-world APIs. They’ll learn how to fetch, display, and manage data using asynchronous JavaScript techniques and modern React patterns. By the end, learners will build a small project that dynamically displays data from an external source, preparing them for professional React development scenarios.",
+    "videoFilename": "carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813327317.mp4",
+    "videoUrl": "/assets/lessons/supernova/fbe869d6-749f-4056-86c6-6d0b22b76ecd/carmodellist-fbe869d6-749f-4056-86c6-6d0b22b76ecd-1761813327317.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T08:35:27.659Z"
+  }
+]

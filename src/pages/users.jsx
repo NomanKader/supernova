@@ -40,7 +40,7 @@ import { apiFetch, BUSINESS_NAME } from '@/config/api';
 const formSchema = z.object({
   name: z.string().min(2, 'Name is required'),
   email: z.string().email('Valid email required'),
-  role: z.enum(['student', 'instructor']),
+  role: z.enum(['student', 'instructor', 'admin']),
   sendInvite: z.boolean().default(true),
 });
 
@@ -224,14 +224,14 @@ export default function UsersPage() {
     if (fetchError) {
       return 'Unable to load users.';
     }
-    return `${users.length} members across instructors and students.`;
+    return `${users.length} members across students, instructors, and admins.`;
   }, [isLoading, fetchError, users.length]);
 
   return (
     <div className="space-y-6">
       <PageHeader
         title="User management"
-        description="Create, invite and moderate instructors and learners."
+        description="Create, invite and moderate admins, instructors and learners."
       >
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
@@ -242,7 +242,7 @@ export default function UsersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite a user</DialogTitle>
-              <DialogDescription>Send workspace access to instructors or learners.</DialogDescription>
+              <DialogDescription>Send workspace access to admins, instructors or learners.</DialogDescription>
             </DialogHeader>
             {submitError ? (
               <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-sm text-destructive">
@@ -292,6 +292,7 @@ export default function UsersPage() {
                         <SelectContent>
                           <SelectItem value="student">Student</SelectItem>
                           <SelectItem value="instructor">Instructor</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormDescription>Role controls permissions across admin tools.</FormDescription>

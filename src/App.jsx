@@ -14,6 +14,7 @@ import CheckoutPage from '@/pages/checkout';
 import CertificatesPage from '@/pages/certificates';
 import ContactUsPage from '@/pages/contact-us';
 import CoursesAdminPage from '@/pages/courses';
+import CourseCategoriesPage from '@/pages/course-categories';
 import DashboardPage from '@/pages/dashboard';
 import EnrollPage from '@/pages/enroll';
 import EnrollmentsPage from '@/pages/enrollments';
@@ -64,6 +65,7 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="courses" element={<CoursesAdminPage />} />
+              <Route path="course-categories" element={<CourseCategoriesPage />} />
               <Route path="lessons" element={<LessonsPage />} />
               <Route path="enrollments" element={<EnrollmentsPage />} />
               <Route path="progress" element={<ProgressPage />} />

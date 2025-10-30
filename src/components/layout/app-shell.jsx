@@ -10,8 +10,23 @@ export function AppShell() {
 
   React.useEffect(() => {
     const adminToken = sessionStorage.getItem('adminToken');
+    const rawUser = sessionStorage.getItem('adminUser');
+    let isAdmin = false;
 
-    if (!adminToken) {
+    if (rawUser) {
+      try {
+        const parsed = JSON.parse(rawUser);
+        if (parsed && typeof parsed.role === 'string') {
+          isAdmin = parsed.role.toLowerCase() === 'admin';
+        }
+      } catch (_error) {
+        sessionStorage.removeItem('adminUser');
+      }
+    }
+
+    if (!adminToken || !isAdmin) {
+      sessionStorage.removeItem('adminToken');
+      sessionStorage.removeItem('adminUser');
       navigate('/admin/login', { replace: true });
       return;
     }

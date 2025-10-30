@@ -49,16 +49,19 @@
 export const categories = [
   {
     id: 'cat-1',
+    slug: 'web-development',
     name: 'Web Development',
     description: 'Frontend, backend and full-stack learning tracks.',
   },
   {
     id: 'cat-2',
+    slug: 'data-ai',
     name: 'Data & AI',
     description: 'Machine learning, analytics and AI operations.',
   },
   {
     id: 'cat-3',
+    slug: 'design-ops',
     name: 'Design Ops',
     description: 'UX, UI and brand collaborations.',
   },
@@ -436,3 +439,4 @@ export const referralPrograms = [
     conversionRate: 38,
   },
 ];
+

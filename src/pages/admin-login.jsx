@@ -2,6 +2,7 @@ import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 
+import { apiFetch, BUSINESS_NAME } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ export default function AdminLoginPage() {
   const [error, setError] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!email || !password) {
@@ -21,11 +22,39 @@ export default function AdminLoginPage() {
       return;
     }
 
+    setError("");
     setIsLoading(true);
-    setTimeout(() => {
-      sessionStorage.setItem("adminToken", "demo-admin-token");
+
+    try {
+      const payload = {
+        email,
+        password,
+      };
+
+      if (BUSINESS_NAME) {
+        payload.businessName = BUSINESS_NAME;
+      }
+
+      const response = await apiFetch("/api/auth/admin/login", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const { data } = response || {};
+      const { token, user } = data || {};
+
+      if (!token || !user) {
+        throw new Error("Unexpected response from server.");
+      }
+
+      sessionStorage.setItem("adminToken", token);
+      sessionStorage.setItem("adminUser", JSON.stringify(user));
       navigate("/admin", { replace: true });
-    }, 600);
+    } catch (err) {
+      setError(err.message || "Failed to sign in.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -56,7 +85,12 @@ export default function AdminLoginPage() {
                 className="h-11 rounded-xl border-transparent bg-[#edf3ff] text-sm focus:border-blue-500 focus:ring-blue-500"
                 autoComplete="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(event) => {
+                  if (error) {
+                    setError("");
+                  }
+                  setEmail(event.target.value);
+                }}
               />
             </div>
 
@@ -76,7 +110,12 @@ export default function AdminLoginPage() {
                 className="h-11 rounded-xl border-transparent bg-[#edf3ff] text-sm focus:border-blue-500 focus:ring-blue-500"
                 autoComplete="current-password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => {
+                  if (error) {
+                    setError("");
+                  }
+                  setPassword(event.target.value);
+                }}
               />
             </div>
 

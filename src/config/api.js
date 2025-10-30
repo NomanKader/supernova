@@ -8,7 +8,10 @@ async function apiFetch(path, options = {}) {
   };
 
   const method = (options.method || 'GET').toUpperCase();
-  if (method !== 'GET' && method !== 'HEAD' && !headers['Content-Type']) {
+  const isFormData =
+    typeof FormData !== 'undefined' && options.body && options.body instanceof FormData;
+
+  if (method !== 'GET' && method !== 'HEAD' && !headers['Content-Type'] && !isFormData) {
     headers['Content-Type'] = 'application/json';
   }
 
