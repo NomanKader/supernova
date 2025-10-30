@@ -15,23 +15,23 @@ const contactMethods = [
   {
     id: 'email',
     title: 'Email Us',
-    value: 'support@supernova.edu',
+    value: 'nksoftwarehouse@gmail.com',
     description: "Send us an email and we'll respond within 24 hours.",
     icon: Mail,
-    href: 'mailto:support@supernova.edu',
+    href: 'mailto:nksoftwarehouse@gmail.com',
   },
   {
     id: 'call',
     title: 'Call Us',
-    value: '+1 (555) 123-4567',
-    description: 'Monday to Friday, 9 AM to 6 PM EST.',
+    value: '+959969119949',
+    description: 'Monday to Friday, 9 AM to 6 PM MMT.',
     icon: Phone,
-    href: 'tel:+15551234567',
+    href: 'tel:+959969119949',
   },
   {
     id: 'visit',
     title: 'Visit Us',
-    value: '123 Education Street, Learning City, CT 12345',
+    value: 'No.34, Bogalazay Street, Botahtaung Township, Yangon',
     description: 'Our headquarters and main campus.',
     icon: MapPin,
   },
@@ -157,8 +157,8 @@ export default function ContactUsPage() {
             ))}
           </div>
 
-          <div className="grid gap-10 py-16 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.15fr)]">
-            <Card className="shadow-lg">
+          <div className="py-16">
+            {/* <Card className="shadow-lg">
               <CardHeader>
                 <CardTitle>Send us a Message</CardTitle>
                 <CardDescription>Fill out the form and we&apos;ll reply as soon as possible.</CardDescription>
@@ -246,13 +246,13 @@ export default function ContactUsPage() {
                   </form>
                 </Form>
               </CardContent>
-            </Card>
+            </Card> */}
 
             <Card className="flex flex-col overflow-hidden shadow-lg">
               <div className="h-64 w-full">
                 <iframe
                   title="Supernova HQ"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3021.9040111798627!2d-74.0106843240902!3d40.70775273964873!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a1781500aa9%3A0x76673f2dc16fc0df!2sCity%20Hall%20Park!5e0!3m2!1sen!2sus!4v1700000000000!5m2!1sen!2sus"
+                  src="https://maps.app.goo.gl/BNJm77rY7ZV3hcUD6"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -285,7 +285,7 @@ export default function ContactUsPage() {
                 </div>
                 <div>
                   <p className="font-medium text-slate-700">Campus Address</p>
-                  <p>123 Education Street, Learning City, CT 12345</p>
+                  <p>No.34, Bogalazay Street, Botahtaung Township, Yangon</p>
                 </div>
               </CardContent>
             </Card>
@@ -293,7 +293,7 @@ export default function ContactUsPage() {
         </div>
       </section>
 
-      <section className="bg-white">
+      {/* <section className="bg-white">
         <div className="mx-auto max-w-5xl px-4 pb-20 pt-8">
           <div className="text-center">
             <h2 className="text-3xl font-semibold tracking-tight">Frequently Asked Questions</h2>
@@ -315,7 +315,7 @@ export default function ContactUsPage() {
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }

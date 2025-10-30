@@ -10,12 +10,12 @@ const quickLinks = [
   { label: 'Contact', to: '/contact-us' },
 ];
 
-const programs = [
-  { label: 'Promotions', to: '/promotions' },
-  { label: 'Affiliate Program', to: '/affiliate-program' },
-  { label: 'Student Discounts', to: '/promotions' },
-  { label: 'Corporate Training', to: '/courses' },
-];
+// const programs = [
+//   { label: 'Promotions', to: '/promotions' },
+//   { label: 'Affiliate Program', to: '/affiliate-program' },
+//   { label: 'Student Discounts', to: '/promotions' },
+//   { label: 'Corporate Training', to: '/courses' },
+// ];
 
 const supportLinks = [
   { label: 'Help Center', to: '/contact-us' },
@@ -69,7 +69,7 @@ export function FooterComponent() {
             </ul>
           </div>
 
-          <div className="space-y-4">
+          {/* <div className="space-y-4">
             <h4 className="text-lg font-semibold">Programs</h4>
             <ul className="space-y-2 text-sm text-cyan-100">
               {programs.map((link) => (
@@ -80,7 +80,7 @@ export function FooterComponent() {
                 </li>
               ))}
             </ul>
-          </div>
+          </div> */}
 
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Support</h4>

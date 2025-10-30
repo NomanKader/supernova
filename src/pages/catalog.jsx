@@ -11,7 +11,7 @@ const levelFilters = ["all", "beginner", "intermediate", "advanced"];
 const courseMeta = {
   "c-001": {
     image:
-      "https://images.unsplash.com/photo-1526481280695-3c4692f07e87?auto=format&fit=crop&w=1200&q=80",
+      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?auto=format&fit=crop&w=1200&q=80",
     price: "$89",
     originalPrice: "$129",
     rating: 4.9,
