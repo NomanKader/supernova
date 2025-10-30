@@ -416,9 +416,9 @@ React.useEffect(() => {
                     </span>
                   ) : null}
                 </div>
-                <Button asChild className="w-full rounded-md bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700">
-                  <Link to={`/checkout/${course.id}`}>Enroll Now</Link>
-                </Button>
+                  {/* <Button asChild className="w-full rounded-md bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700">
+                    <Link to={`/checkout/${course.id}`}>Enroll Now</Link>
+                  </Button> */}
               </div>
 
               <div className="grid gap-3 text-xs text-slate-600">

@@ -494,12 +494,12 @@ export default function CourseDetailPage() {
                 <p className="flex items-center gap-2 text-foreground">
                   <ShieldCheck className="h-4 w-4 text-primary" /> Assessment fee: $49
                 </p>
-                <Button className="w-full" size="lg" onClick={handleEnroll}>
+                {/* <Button className="w-full" size="lg" onClick={handleEnroll}>
                   Go to payment
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
                   <Link to={`/enroll/${course.id}`}>Need preparation support?</Link>
-                </Button>
+                </Button> */}
               </div>
             </CardContent>
           </Card>
@@ -747,7 +747,7 @@ export default function CourseDetailPage() {
                   asChild
                   className="w-full rounded-md bg-blue-600 text-sm font-semibold text-white hover:bg-blue-700"
                 >
-                  <Link to={`/checkout/${course.id}`}>Enroll Now</Link>
+                  {/* <Link to={`/checkout/${course.id}`}>Enroll Now</Link> */}
                 </Button>
               </div>
 

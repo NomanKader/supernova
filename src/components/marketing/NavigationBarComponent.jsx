@@ -13,8 +13,8 @@ const navItems = [
   { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
-  { label: 'Promotions', to: '/promotions' },
-  { label: 'Affiliate Program', to: '/affiliate-program' },
+  // { label: 'Promotions', to: '/promotions' },
+  // { label: 'Affiliate Program', to: '/affiliate-program' },
 ];
 
 export function SiteHeader() {
@@ -54,7 +54,8 @@ export function SiteHeader() {
             </NavLink>
           ))}
         </nav>
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Auth actions hidden temporarily for App Store build */}
+        {/* <div className="hidden items-center gap-2 md:flex">
           {authBadge}
           {isAuthenticated ? (
             <>
@@ -75,7 +76,7 @@ export function SiteHeader() {
               </Button>
             </>
           )}
-        </div>
+        </div> */}
         <Button
           variant="ghost"
           size="icon"
@@ -104,7 +105,7 @@ export function SiteHeader() {
                 {item.label}
               </NavLink>
             ))}
-            <div className="flex flex-col gap-2 pt-2">
+            {/* <div className="flex flex-col gap-2 pt-2">
               {authBadge}
               {isAuthenticated ? (
                 <>
@@ -129,7 +130,7 @@ export function SiteHeader() {
                   </Button>
                 </>
               )}
-            </div>
+            </div> */}
           </nav>
         </div>
       ) : null}

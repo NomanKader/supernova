@@ -289,12 +289,12 @@ export default function HomePage() {
                     </div>
                     <div className="mt-6 flex items-center justify-between">
                       <span className="text-2xl font-semibold text-blue-600">${course.price}</span>
-                      <Link
-                        to={`/courses`}
-                        className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
-                      >
-                        Enroll Now
-                      </Link>
+                        {/* <Link
+                          to={`/courses`}
+                          className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
+                        >
+                          Enroll Now
+                        </Link> */}
                     </div>
                   </div>
                 </div>

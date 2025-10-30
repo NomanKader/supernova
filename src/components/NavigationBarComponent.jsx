@@ -11,8 +11,8 @@ const navItems = [
   { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
-  { label: 'Promotions', to: '/promotions' },
-  { label: 'Affiliate', to: '/affiliate-program' },
+  // { label: 'Promotions', to: '/promotions' },
+  // { label: 'Affiliate', to: '/affiliate-program' },
 ];
 
 export function NavigationBarComponent() {
@@ -59,7 +59,8 @@ export function NavigationBarComponent() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-6 md:flex">
+        {/* Auth shortcuts hidden to streamline App Store build */}
+        {/* <div className="hidden items-center gap-6 md:flex">
           {isAuthenticated ? (
             <>
               <Link
@@ -100,7 +101,7 @@ export function NavigationBarComponent() {
               </Link>
             </>
           )}
-        </div>
+        </div> */}
 
         <button
           type="button"
@@ -130,7 +131,8 @@ export function NavigationBarComponent() {
                 {item.label}
               </NavLink>
             ))}
-            <div className="mt-3 flex flex-col gap-2">
+            {/* Mobile auth actions temporarily hidden for App Store build */}
+            {/* <div className="mt-3 flex flex-col gap-2">
               {isAuthenticated ? (
                 <>
                   <div className="flex items-center gap-3 rounded-lg border border-cyan-100 bg-cyan-50/40 px-3 py-2">
@@ -175,7 +177,7 @@ export function NavigationBarComponent() {
                   </Link>
                 </>
               )}
-            </div>
+            </div> */}
           </nav>
         </div>
       ) : null}
