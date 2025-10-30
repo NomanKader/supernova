@@ -69,6 +69,7 @@ export function FooterComponent() {
             </ul>
           </div>
 
+
           {/* <div className="space-y-4">
             <h4 className="text-lg font-semibold">Programs</h4>
             <ul className="space-y-2 text-sm text-cyan-100">
