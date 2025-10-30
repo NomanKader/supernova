@@ -21,7 +21,7 @@ const supportLinks = [
   { label: 'Help Center', to: '/contact-us' },
   { label: 'Privacy Policy', to: '/privacy' },
   { label: 'Terms of Service', to: '/terms' },
-  { label: 'FAQ', to: '/get-started' },
+  // { label: 'FAQ', to: '/get-started' },
 ];
 
 const socialLinks = [
