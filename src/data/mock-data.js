@@ -58,13 +58,13 @@ export const categories = [
     slug: 'data-ai',
     name: 'Data & AI',
     description: 'Machine learning, analytics and AI operations.',
-  },
-  {
-    id: 'cat-3',
-    slug: 'design-ops',
-    name: 'Design Ops',
-    description: 'UX, UI and brand collaborations.',
-  },
+  }
+  // {
+  //   id: 'cat-3',
+  //   slug: 'design-ops',
+  //   name: 'Design Ops',
+  //   description: 'UX, UI and brand collaborations.',
+  // },
 ];
 
 export const courses = [

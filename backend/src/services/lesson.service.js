@@ -58,8 +58,24 @@ async function writeLessons(businessKey, lessons) {
 }
 
 async function listLessons({ businessKey, courseId } = {}) {
-  const key = resolveBusinessKey(businessKey);
-  const lessons = await readLessons(key);
+  let lessons = [];
+
+  if (businessKey) {
+    const key = resolveBusinessKey(businessKey);
+    lessons = await readLessons(key);
+  } else {
+    try {
+      const directories = await fs.readdir(lessonsRoot, { withFileTypes: true });
+      for (const entry of directories) {
+        if (entry.isDirectory()) {
+          const dirLessons = await readLessons(entry.name);
+          lessons = lessons.concat(dirLessons);
+        }
+      }
+    } catch {
+      lessons = [];
+    }
+  }
 
   const filtered = courseId ? lessons.filter((lesson) => lesson.courseId === String(courseId)) : lessons;
 
@@ -132,4 +148,3 @@ module.exports = {
   listLessons,
   addLesson,
 };
-

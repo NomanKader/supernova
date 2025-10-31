@@ -729,7 +729,7 @@ export default function CourseDetailPage() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-baseline gap-3">
                     <span className="text-3xl font-semibold text-slate-900">
-                      {meta.price}
+                      {/* {meta.price} */}
                     </span>
                     {meta.originalPrice ? (
                       <span className="text-sm font-medium text-slate-400 line-through">

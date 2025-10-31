@@ -177,7 +177,7 @@ export default function CoursesPage() {
                 level={levelLabel}
                 enrollments={course.enrollments ?? 0}
                 nextStart={meta.nextStart}
-                price={meta.price}
+                // price={meta.price}
                 originalPrice={meta.originalPrice}
                 rating={meta.rating}
                 reviewCount={meta.reviewCount}

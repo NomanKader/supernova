@@ -225,9 +225,9 @@ export default function AboutUsPage() {
           courses.
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-          <Button size="lg" asChild>
+          {/* <Button size="lg" asChild>
             <a href="/courses">Browse Courses</a>
-          </Button>
+          </Button> */}
           <Button size="lg" variant="outline" asChild>
             <a href="/contact-us">Contact Us</a>
           </Button>

@@ -1,34 +1,26 @@
-﻿import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Linkedin, Instagram } from 'lucide-react';
+﻿import { Link } from "react-router-dom";
 
-import logoImg from '@/assets/logo.jpg';
+import logoImg from "@/assets/logo.jpg";
 
 const quickLinks = [
-  { label: 'Home', to: '/' },
-  { label: 'Courses', to: '/courses' },
-  { label: 'About', to: '/about-us' },
-  { label: 'Contact', to: '/contact-us' },
+  { label: "Home", to: "/" },
+  // { label: "Courses", to: "/courses" },
+  { label: "About", to: "/about-us" },
+  { label: "Contact", to: "/contact-us" },
 ];
 
 // const programs = [
-//   { label: 'Promotions', to: '/promotions' },
-//   { label: 'Affiliate Program', to: '/affiliate-program' },
-//   { label: 'Student Discounts', to: '/promotions' },
-//   { label: 'Corporate Training', to: '/courses' },
+//   { label: "Promotions", to: "/promotions" },
+//   { label: "Affiliate Program", to: "/affiliate-program" },
+//   { label: "Student Discounts", to: "/promotions" },
+//   { label: "Corporate Training", to: "/courses" },
 // ];
 
 const supportLinks = [
-  { label: 'Help Center', to: '/contact-us' },
-  { label: 'Privacy Policy', to: '/privacy' },
-  { label: 'Terms of Service', to: '/terms' },
-  // { label: 'FAQ', to: '/get-started' },
-];
-
-const socialLinks = [
-  { label: 'Facebook', href: '#', Icon: Facebook },
-  { label: 'Twitter', href: '#', Icon: Twitter },
-  { label: 'LinkedIn', href: '#', Icon: Linkedin },
-  { label: 'Instagram', href: '#', Icon: Instagram },
+  { label: "Help Center", to: "/contact-us" },
+  { label: "Privacy Policy", to: "/privacy" },
+  { label: "Terms of Service", to: "/terms" },
+  // { label: "FAQ", to: "/get-started" },
 ];
 
 export function FooterComponent() {
@@ -42,18 +34,6 @@ export function FooterComponent() {
               Empowering learners worldwide with cutting-edge online education. Transform your career with
               our expert-led courses and innovative learning platform.
             </p>
-            <div className="flex gap-4">
-              {socialLinks.map(({ label, href, Icon }) => (
-                <a
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20"
-                >
-                  <Icon className="h-4 w-4" />
-                </a>
-              ))}
-            </div>
           </div>
 
           <div className="space-y-4">
@@ -68,7 +48,6 @@ export function FooterComponent() {
               ))}
             </ul>
           </div>
-
 
           {/* <div className="space-y-4">
             <h4 className="text-lg font-semibold">Programs</h4>
@@ -109,4 +88,10 @@ export function FooterComponent() {
     </footer>
   );
 }
+
+
+
+
+
+
 

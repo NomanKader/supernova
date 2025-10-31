@@ -1,5 +1,39 @@
 [
   {
+    "id": "88ddb37b-9c26-42ca-ba4b-becb404c8592",
+    "title": "Introduction to Graphic Design",
+    "description": "Description of Graphic design course .",
+    "categoryId": "3",
+    "instructorIds": [
+      "11"
+    ],
+    "level": "beginner",
+    "status": "draft",
+    "lessons": 0,
+    "enrollments": 0,
+    "updatedAt": "2025-10-30T17:51:55.371Z",
+    "createdAt": "2025-10-30T17:51:55.371Z",
+    "imageUrl": "/assets/courses/educaremm-1761846715330.png",
+    "imageFilename": "educaremm-1761846715330.png"
+  },
+  {
+    "id": "8000aa55-9335-426b-94c6-57ceca401f74",
+    "title": "Introduction to marketing",
+    "description": "This course is aim for marketing beginner level .",
+    "categoryId": "2",
+    "instructorIds": [
+      "11"
+    ],
+    "level": "beginner",
+    "status": "draft",
+    "lessons": 0,
+    "enrollments": 0,
+    "updatedAt": "2025-10-30T17:13:05.847Z",
+    "createdAt": "2025-10-30T17:13:05.847Z",
+    "imageUrl": "/assets/courses/nksoftwarehouse-1761844385836.png",
+    "imageFilename": "nksoftwarehouse-1761844385836.png"
+  },
+  {
     "id": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
     "title": "Introduction to React JS",
     "description": "Learners will have the skills and confidence to build dynamic, responsive, and modern web applications from scratch. They will understand the core concepts of React such as components, state management, hooks, and routing, as well as how to connect APIs and handle real-world data efficiently. Learners will also gain hands-on experience working with Material UI, project structuring, and best practices used in professional development environments. By the end of the course, they’ll be able to create and deploy fully functional React projects and be ready to work independently or contribute effectively as part of a development team.",

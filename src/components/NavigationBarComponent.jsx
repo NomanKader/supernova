@@ -8,7 +8,7 @@ import { useAuth } from '@/components/marketing/auth-context';
 
 const navItems = [
   { label: 'Home', to: '/' },
-  { label: 'Courses', to: '/courses' },
+  // { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
   // { label: 'Promotions', to: '/promotions' },

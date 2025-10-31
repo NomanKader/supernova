@@ -166,19 +166,20 @@ export default function HomePage() {
                 cheering for your success.
               </p>
               <div className="flex flex-col gap-3 sm:flex-row">
-                <Link
-                  to="/get-started"
+                <a 
+                  href="#whysupernova"
                   className="flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-3 text-base font-semibold text-cyan-600 shadow-xl shadow-cyan-900/30 transition hover:-translate-y-0.5 hover:bg-cyan-50"
                 >
-                  Start learning today
+                  {/* Start learning today */}
+                  Why SuperNova ?
                   <ArrowUpRight className="h-5 w-5" />
-                </Link>
-                <Link
-                  to="/courses"
+                </a>
+                <a
+                  href="#courses"
                   className="flex items-center justify-center gap-2 rounded-lg border border-white/60 px-8 py-3 text-base font-semibold text-white transition hover:bg-white/10"
                 >
                   Explore courses
-                </Link>
+                </a>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-cyan-100/90">
                 <div className="flex items-center gap-2">
@@ -214,7 +215,7 @@ export default function HomePage() {
         <section className="py-20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
-              <span className="text-sm font-semibold uppercase tracking-wide text-cyan-600">
+              <span id='whysupernova' className="text-sm font-semibold uppercase tracking-wide text-cyan-600">
                 Why Supernova
               </span>
               <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-4xl">
@@ -251,8 +252,8 @@ export default function HomePage() {
               <span className="text-sm font-semibold uppercase tracking-wide text-cyan-600">
                 Featured Courses
               </span>
-              <h2 className="mt-4 text-3xl font-bold text-gray-900 md:text-4xl">
-                Discover our most popular learning paths
+              <h2 id='courses' className="mt-4 text-3xl font-bold text-gray-900 md:text-4xl">
+                Discover our most upcoming courses
               </h2>
               <p className="mt-4 text-lg text-gray-600">
                 Explore flagship programs that combine expert instruction, hands-on projects, and
@@ -285,10 +286,10 @@ export default function HomePage() {
                         <span className="flex items-center gap-0.5">{renderRating(course.rating)}</span>
                         <span className="text-gray-500">({course.rating.toFixed(1)})</span>
                       </span>
-                      <span>{course.students.toLocaleString()} students</span>
+                      {/* <span>{course.students.toLocaleString()} students</span> */}
                     </div>
                     <div className="mt-6 flex items-center justify-between">
-                      <span className="text-2xl font-semibold text-blue-600">${course.price}</span>
+                      {/* <span className="text-2xl font-semibold text-blue-600">${course.price}</span> */}
                         {/* <Link
                           to={`/courses`}
                           className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
@@ -301,7 +302,7 @@ export default function HomePage() {
               ))}
             </div>
 
-            <div className="mt-12 flex justify-center">
+            {/* <div className="mt-12 flex justify-center">
               <Link
                 to="/courses"
                 className="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 px-6 py-3 text-sm font-semibold text-blue-600 transition hover:bg-blue-50"
@@ -309,7 +310,7 @@ export default function HomePage() {
                 View all courses
                 <ArrowRight className="h-4 w-4" />
               </Link>
-            </div>
+            </div> */}
           </div>
         </section>
 
@@ -348,13 +349,13 @@ export default function HomePage() {
                   <p className="mt-6 flex-1 text-sm leading-relaxed text-gray-700">
                     "{testimonial.content}"
                   </p>
-                  <Link
+                  {/* <Link
                     to="/promotions"
                     className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-cyan-600 transition hover:text-blue-600"
                   >
                     See their pathway
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
+                  </Link> */}
                 </div>
               ))}
             </div>
@@ -372,19 +373,19 @@ export default function HomePage() {
               chapter starts today.
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <Link
+              {/* <Link
                 to="/get-started"
                 className="flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-3 text-base font-semibold text-cyan-600 shadow-xl shadow-cyan-900/30 transition hover:-translate-y-0.5 hover:bg-cyan-50"
               >
                 Start free trial
                 <ArrowUpRight className="h-5 w-5" />
-              </Link>
-              <Link
+              </Link> */}
+              {/* <Link
                 to="/courses"
                 className="flex items-center justify-center gap-2 rounded-lg border border-white/70 px-8 py-3 text-base font-semibold text-white transition hover:bg-white/10"
               >
                 Browse courses
-              </Link>
+              </Link> */}
             </div>
           </div>
         </section>

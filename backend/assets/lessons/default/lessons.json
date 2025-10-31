@@ -1,0 +1,67 @@
+[
+  {
+    "id": "d8c14388-fdb6-47e8-908d-9a1d8618eea2",
+    "courseId": "8000aa55-9335-426b-94c6-57ceca401f74",
+    "lessonNumber": 1,
+    "title": "Introduction to Marketing",
+    "description": "Description of marketing",
+    "videoFilename": "carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844609143.mp4",
+    "videoUrl": "/assets/lessons/default/8000aa55-9335-426b-94c6-57ceca401f74/carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844609143.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T17:16:49.857Z"
+  },
+  {
+    "id": "dd2299fe-b76b-4467-bd94-5f51b5dcc52a",
+    "courseId": "8000aa55-9335-426b-94c6-57ceca401f74",
+    "lessonNumber": 2,
+    "title": "Marketing Funnel",
+    "description": "description of marketing funnel",
+    "videoFilename": "carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844609896.mp4",
+    "videoUrl": "/assets/lessons/default/8000aa55-9335-426b-94c6-57ceca401f74/carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844609896.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T17:16:50.201Z"
+  },
+  {
+    "id": "e464eff9-14b3-4621-be02-fd81cd6d2022",
+    "courseId": "8000aa55-9335-426b-94c6-57ceca401f74",
+    "lessonNumber": 3,
+    "title": "Marketing Campaign",
+    "description": "description of marketing campaign",
+    "videoFilename": "carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844610231.mp4",
+    "videoUrl": "/assets/lessons/default/8000aa55-9335-426b-94c6-57ceca401f74/carmodellist-8000aa55-9335-426b-94c6-57ceca401f74-1761844610231.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T17:16:50.569Z"
+  },
+  {
+    "id": "4f56d845-b32e-4d8a-be76-a867853982b7",
+    "courseId": "88ddb37b-9c26-42ca-ba4b-becb404c8592",
+    "lessonNumber": 1,
+    "title": "Introduction to graphic design",
+    "description": "description of graphic design",
+    "videoFilename": "carmodellist-88ddb37b-9c26-42ca-ba4b-becb404c8592-1761846934362.mp4",
+    "videoUrl": "/assets/lessons/default/88ddb37b-9c26-42ca-ba4b-becb404c8592/carmodellist-88ddb37b-9c26-42ca-ba4b-becb404c8592-1761846934362.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T17:55:35.322Z"
+  },
+  {
+    "id": "5decdbac-9eb5-4077-8da5-26c50187e99b",
+    "courseId": "88ddb37b-9c26-42ca-ba4b-becb404c8592",
+    "lessonNumber": 2,
+    "title": "Lesson2-Graphic Design",
+    "description": "Description of graphic design",
+    "videoFilename": "carmodellist-88ddb37b-9c26-42ca-ba4b-becb404c8592-1761846935365.mp4",
+    "videoUrl": "/assets/lessons/default/88ddb37b-9c26-42ca-ba4b-becb404c8592/carmodellist-88ddb37b-9c26-42ca-ba4b-becb404c8592-1761846935365.mp4",
+    "mimeType": "video/mp4",
+    "sizeBytes": 19979122,
+    "sizeMB": 19.05,
+    "uploadedAt": "2025-10-30T17:55:35.774Z"
+  }
+]
