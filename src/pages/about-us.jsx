@@ -151,6 +151,8 @@ export default function AboutUsPage() {
         </div>
       </section>
 
+      {/* Temporarily hide the leadership section per request */}
+      {/*
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="text-center">
           <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">
@@ -190,7 +192,10 @@ export default function AboutUsPage() {
           ))}
         </div>
       </section>
+      */}
 
+      {/* Temporarily hide the journey section per request */}
+      {/*
       <section className="bg-slate-50 py-16">
         <div className="mx-auto max-w-5xl px-6">
           <h2 className="text-center text-3xl font-semibold text-slate-900 md:text-4xl">
@@ -202,6 +207,7 @@ export default function AboutUsPage() {
           <Timeline className="mt-12" items={journeyMilestones} />
         </div>
       </section>
+      */}
 
       <section className="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 py-16 text-white">
         <div className="mx-auto max-w-6xl px-6">
