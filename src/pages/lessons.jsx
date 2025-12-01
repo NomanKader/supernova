@@ -98,11 +98,16 @@ export default function LessonsPage() {
     return query ? `?${query}` : '';
   }, []);
 
+  const adminCoursesPath = React.useMemo(
+    () => `/api/courses${querySuffix ? `${querySuffix}&status=all` : '?status=all'}`,
+    [querySuffix],
+  );
+
   const loadCourses = React.useCallback(async () => {
     setCoursesLoading(true);
     setCoursesError(null);
     try {
-      const response = await apiFetch(`/api/courses${querySuffix}`);
+      const response = await apiFetch(adminCoursesPath);
       const data = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
@@ -115,7 +120,7 @@ export default function LessonsPage() {
     } finally {
       setCoursesLoading(false);
     }
-  }, [querySuffix]);
+  }, [adminCoursesPath]);
 
   const loadLessons = React.useCallback(async () => {
     setLessonsLoading(true);

@@ -2,10 +2,11 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Loader2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/components/marketing/auth-context";
+import { apiFetch, BUSINESS_NAME } from "@/config/api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,22 +40,14 @@ const defaultValues = {
   agree: false,
 };
 
-function AuthButton({ icon, children }) {
-  return (
-    <Button
-      variant="outline"
-      className="flex w-full items-center justify-center gap-2 rounded-xl border-slate-200 bg-white text-slate-600 transition hover:border-blue-400 hover:text-blue-600"
-      type="button"
-    >
-      {icon}
-      {children}
-    </Button>
-  );
-}
-
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const googleButtonRef = React.useRef(null);
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [googleReady, setGoogleReady] = React.useState(false);
+  const [googleError, setGoogleError] = React.useState("");
   const {
     register,
     handleSubmit,
@@ -65,11 +58,154 @@ export default function RegisterPage() {
     defaultValues,
   });
 
-  const onSubmit = (values) => {
+  React.useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
+  const syncUserDirectory = React.useCallback(async (profile) => {
+    if (!BUSINESS_NAME || !profile?.email) {
+      return;
+    }
+
+    const composedName =
+      profile.name?.trim() ||
+      [profile.firstName, profile.lastName].filter(Boolean).join(" ").trim() ||
+      profile.email;
+
+    try {
+      await apiFetch("/api/users", {
+        method: "POST",
+        body: JSON.stringify({
+          name: composedName,
+          email: profile.email,
+          role: "student",
+          businessName: BUSINESS_NAME,
+          status: "active",
+          sendInvite: false,
+        }),
+      });
+    } catch (error) {
+      // Ignore duplicates; log other errors for visibility
+      if (error?.status && (error.status === 409 || error.status === 400)) {
+        return;
+      }
+      console.warn("Failed to sync user directory", error);
+    }
+  }, [BUSINESS_NAME]);
+
+  const onSubmit = async (values) => {
+    await syncUserDirectory({
+      email: values.email,
+      name: `${values.firstName} ${values.lastName}`.trim(),
+    });
+
     login({ email: values.email, subscribe: false });
     reset(defaultValues);
     navigate("/courses");
   };
+
+  React.useEffect(() => {
+    if (!googleClientId) {
+      setGoogleError("Set VITE_GOOGLE_CLIENT_ID to enable Google sign-up.");
+      return undefined;
+    }
+
+    const handleLoaded = () => {
+      setGoogleError("");
+      setGoogleReady(true);
+    };
+
+    const handleError = () => {
+      setGoogleError("Unable to load Google Sign-In at the moment.");
+    };
+
+    if (typeof window !== "undefined" && window.google && window.google.accounts?.id) {
+      handleLoaded();
+      return undefined;
+    }
+
+    let script = document.querySelector('script[data-google-identity]');
+    if (script) {
+      script.addEventListener("load", handleLoaded);
+      script.addEventListener("error", handleError);
+      return () => {
+        script.removeEventListener("load", handleLoaded);
+        script.removeEventListener("error", handleError);
+      };
+    }
+
+    script = document.createElement("script");
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.dataset.googleIdentity = "true";
+    script.onload = handleLoaded;
+    script.onerror = handleError;
+    document.head.appendChild(script);
+
+    return () => {
+      script.onload = null;
+      script.onerror = null;
+    };
+  }, [googleClientId]);
+
+  const handleGoogleCredential = React.useCallback(
+    async (response) => {
+      if (!response?.credential) {
+        setGoogleError("Google did not return a credential. Please try again.");
+        return;
+      }
+      setIsGoogleLoading(true);
+      setGoogleError("");
+      try {
+        const payload = await apiFetch("/api/auth/google", {
+          method: "POST",
+          body: JSON.stringify({ credential: response.credential }),
+        });
+        const profile = payload?.data || payload;
+        await syncUserDirectory(profile);
+        login({
+          email: profile.email,
+          name: profile.name,
+          avatarUrl: profile.picture,
+          provider: "google",
+          subscribe: false,
+        });
+        navigate("/courses");
+      } catch (error) {
+        console.error("Google sign-up failed", error);
+        setGoogleError(error.message || "Unable to sign up with Google right now.");
+      } finally {
+        setIsGoogleLoading(false);
+      }
+    },
+    [login, navigate, syncUserDirectory],
+  );
+
+  React.useEffect(() => {
+    if (!googleReady || !googleClientId) {
+      return;
+    }
+    if (typeof window === "undefined" || !window.google?.accounts?.id || !googleButtonRef.current) {
+      return;
+    }
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: handleGoogleCredential,
+      ux_mode: "popup",
+    });
+
+    const target = googleButtonRef.current;
+    target.innerHTML = "";
+    window.google.accounts.id.renderButton(target, {
+      theme: "outline",
+      size: "large",
+      shape: "pill",
+      text: "signup_with",
+      width: target.offsetWidth || 320,
+    });
+  }, [googleReady, googleClientId, handleGoogleCredential]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-[#f3f6ff] px-4 pb-24 pt-16">
@@ -208,9 +344,18 @@ export default function RegisterPage() {
               <Separator className="flex-1 bg-slate-200" />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <AuthButton icon={<span className="text-lg text-red-500">G</span>}>
-                Google
-              </AuthButton>
+              <div className="w-full">
+                <div ref={googleButtonRef} className="flex w-full justify-center" />
+                {isGoogleLoading ? (
+                  <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
+                    <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                    Connecting to Google…
+                  </div>
+                ) : null}
+                {googleError ? (
+                  <p className="mt-3 text-center text-xs text-red-500">{googleError}</p>
+                ) : null}
+              </div>
             </div>
           </div>
 

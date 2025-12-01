@@ -10,15 +10,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { apiFetch } from '@/config/api';
 
 const contactMethods = [
   {
     id: 'email',
     title: 'Email Us',
-    value: 'support@supernova.edu',
+    value: 'support@edusupernova.com',
     description: "Send us an email and we'll respond within 24 hours.",
     icon: Mail,
-    href: 'mailto:support@supernova.edu',
+    href: 'mailto:support@edusupernova.com',
   },
   {
     id: 'call',
@@ -99,15 +100,41 @@ export default function ContactUsPage() {
     resolver: zodResolver(schema),
     defaultValues,
   });
+  const [submissionStatus, setSubmissionStatus] = React.useState({
+    state: 'idle',
+    message: '',
+  });
 
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'auto' });
   }, []);
 
-  const onSubmit = (values) => {
-    console.log('Contact request', values);
-    form.reset(defaultValues);
+  const onSubmit = async (values) => {
+    setSubmissionStatus({ state: 'loading', message: '' });
+    try {
+      const subjectLabel =
+        contactSubjects.find((option) => option.value === values.subject)?.label || values.subject;
+      const payload = {
+        ...values,
+        subject: subjectLabel,
+      };
+      await apiFetch('/api/contact', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      setSubmissionStatus({
+        state: 'success',
+        message: "Thanks for reaching out! We'll follow up shortly.",
+      });
+      form.reset(defaultValues);
+    } catch (error) {
+      setSubmissionStatus({
+        state: 'error',
+        message: error.message || 'Unable to send your message. Please try again.',
+      });
+    }
   };
+  const isSubmitting = submissionStatus.state === 'loading';
 
   return (
     <div className="flex flex-col">
@@ -187,7 +214,7 @@ export default function ContactUsPage() {
                           <FormItem>
                             <FormLabel>Email Address</FormLabel>
                             <FormControl>
-                              <Input type="email" placeholder="you@supernova.edu" {...field} />
+                              <Input type="email" placeholder="you@gmail.com" {...field} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -240,9 +267,24 @@ export default function ContactUsPage() {
                         );
                       }}
                     />
-                    <Button type="submit" className="w-full">
-                      <Send className="mr-2 h-4 w-4" /> Send Message
-                    </Button>
+                    <div className="space-y-3">
+                      <Button type="submit" className="w-full" disabled={isSubmitting}>
+                        <Send className="mr-2 h-4 w-4" />
+                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                      </Button>
+                      {submissionStatus.message ? (
+                        <p
+                          className={`text-center text-sm ${
+                            submissionStatus.state === 'success'
+                              ? 'text-green-600'
+                              : 'text-destructive'
+                          }`}
+                          aria-live="polite"
+                        >
+                          {submissionStatus.message}
+                        </p>
+                      ) : null}
+                    </div>
                   </form>
                 </Form>
               </CardContent>

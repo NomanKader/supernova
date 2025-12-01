@@ -33,37 +33,37 @@ const coreValues = [
 const leadershipTeam = [
   {
     name: 'Dr. Sarah Mitchell',
-    title: 'CEO & Founder',
+    title: 'Instructor',
     image: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=480&q=80',
     bio: 'Former Stanford professor with 15+ years in educational technology. Passionate about democratizing quality education.',
   },
   {
     name: 'Michael Rodriguez',
-    title: 'CTO',
+    title: 'Instructor',
     image: 'https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?auto=format&fit=crop&w=480&q=80',
     bio: 'Ex-Google engineer specializing in scalable learning platforms. Expert in AI-driven educational solutions.',
   },
   {
     name: 'Emily Chen',
-    title: 'Head of Content',
+    title: 'Instructor',
     image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=480&q=80',
     bio: 'Award-winning curriculum designer with expertise in creating engaging, industry-relevant course material.',
   },
   {
     name: 'David Thompson',
-    title: 'Head of Student Success',
+    title: 'Instructor',
     image: 'https://images.unsplash.com/photo-1544723795-3fb6469f5b39?auto=format&fit=crop&w=480&q=80',
     bio: 'Dedicated to ensuring every student achieves their learning goals through personalized support and mentorship.',
   },
 ];
 
 const journeyMilestones = [
-  { year: '2018', description: 'Supernova founded with a vision to transform online education.' },
-  { year: '2019', description: 'Launched our first 10 courses with industry expert instructors.' },
-  { year: '2020', description: 'Reached 10,000 students and expanded to mobile learning.' },
   { year: '2021', description: 'Introduced AI-powered personalized learning paths.' },
   { year: '2022', description: 'Partnered with Fortune 500 companies for corporate training.' },
   { year: '2023', description: 'Achieved 50,000 active learners and a 95% completion rate.' },
+  { year: '2024', description: 'Start Developing best LMS website for our students.' },
+  { year: '2025', description: 'Launched website and mobile app for our edusupernova.com Version1.0 website for our students and instructors.' },
+
 ];
 
 const highlightStats = [
@@ -154,7 +154,7 @@ export default function AboutUsPage() {
       <section className="mx-auto max-w-6xl px-6 py-16">
         <div className="text-center">
           <h2 className="text-3xl font-semibold text-slate-900 md:text-4xl">
-            Meet Our Leadership Team
+            Meet Our Best Instructors
           </h2>
           <p className="mt-4 text-slate-600">
             Passionate educators and technologists dedicated to your success.

@@ -5,6 +5,7 @@ const initialAuthState = {
   isSubscribed: false,
   purchasedCourses: [],
   user: null,
+  token: null,
 };
 
 const AuthContext = React.createContext({
@@ -22,7 +23,12 @@ function loadState() {
     const stored = window.localStorage.getItem(storageKey);
     if (!stored) return initialAuthState;
     const parsed = JSON.parse(stored);
-    return { ...initialAuthState, ...parsed, purchasedCourses: parsed.purchasedCourses ?? [] };
+    return {
+      ...initialAuthState,
+      ...parsed,
+      purchasedCourses: parsed.purchasedCourses ?? [],
+      token: parsed.token ?? null,
+    };
   } catch (error) {
     console.warn('Failed to read auth state', error);
     return initialAuthState;
@@ -45,14 +51,38 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = React.useCallback((credentials) => {
+    const existingPurchases = state.purchasedCourses ?? [];
+    const providedPurchases = Array.isArray(credentials?.purchasedCourses)
+      ? credentials.purchasedCourses
+      : null;
+    const mergedPurchases = providedPurchases
+      ? Array.from(new Set([...(existingPurchases || []), ...providedPurchases]))
+      : existingPurchases;
+
+    const providedUser = credentials?.user || null;
+    const userProfile = providedUser
+      ? {
+          email: providedUser.email ?? 'learner@supernova.dev',
+          name: providedUser.name || null,
+          avatarUrl: providedUser.avatarUrl || null,
+          provider: providedUser.provider || credentials?.provider || 'password',
+        }
+      : {
+          email: credentials?.email ?? 'learner@supernova.dev',
+          name: credentials?.name || null,
+          avatarUrl: credentials?.avatarUrl || null,
+          provider: credentials?.provider || 'password',
+        };
+
     const nextState = {
       isAuthenticated: true,
       isSubscribed: Boolean(credentials?.subscribe),
-      purchasedCourses: credentials?.subscribe ? Array.from(new Set([...(state.purchasedCourses ?? [])])) : state.purchasedCourses ?? [],
-      user: { email: credentials?.email ?? 'learner@supernova.dev' },
+      purchasedCourses: mergedPurchases,
+      user: userProfile,
+      token: credentials?.token ?? state.token ?? null,
     };
     persist(nextState);
-  }, [persist, state.purchasedCourses]);
+  }, [persist, state.purchasedCourses, state.token]);
 
   const logout = React.useCallback(() => {
     persist(initialAuthState);

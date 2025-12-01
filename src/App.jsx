@@ -33,6 +33,7 @@ import ReferralsPage from '@/pages/referrals';
 import RegisterPage from '@/pages/register';
 import TermsPage from '@/pages/terms';
 import UsersPage from '@/pages/users';
+import CustomersPage from '@/pages/customers';
 
 function App() {
   return (
@@ -64,6 +65,7 @@ function App() {
             <Route path="/admin" element={<AppShell />}>
               <Route index element={<DashboardPage />} />
               <Route path="users" element={<UsersPage />} />
+              <Route path="customers" element={<CustomersPage />} />
               <Route path="courses" element={<CoursesAdminPage />} />
               <Route path="course-categories" element={<CourseCategoriesPage />} />
               <Route path="lessons" element={<LessonsPage />} />

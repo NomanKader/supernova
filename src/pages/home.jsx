@@ -15,6 +15,8 @@ import heroBackground from '@/assets/backgroundImage.jpg';
 import courseImage1 from '@/assets/course1.png';
 import courseImage2 from '@/assets/course2.png';
 import courseImage3 from '@/assets/course3.png';
+import { apiFetch, BUSINESS_NAME } from '@/config/api';
+import { resolveCourseImage, resolveCourseTitle, formatPriceLabel } from '@/utils/course';
 
 const stats = [
   { number: '50,000+', label: 'Active Students' },
@@ -22,6 +24,8 @@ const stats = [
   { number: '1,500+', label: 'Hours of Content' },
   { number: '95%', label: 'Completion Success' },
 ];
+
+const fallbackCourseImages = [courseImage1, courseImage2, courseImage3];
 
 const features = [
   {
@@ -56,33 +60,36 @@ const features = [
   },
 ];
 
-const featuredCourses = [
+const fallbackFeaturedCourses = [
   {
+    id: 'fallback-1',
     category: 'Development',
     title: 'Full Stack Web Development',
     instructor: 'Sarah Johnson',
     rating: 4.9,
     students: 12847,
     price: 89,
-    image: courseImage1,
+    image: fallbackCourseImages[0],
   },
   {
+    id: 'fallback-2',
     category: 'Marketing',
     title: 'Digital Marketing Mastery',
     instructor: 'Michael Chen',
     rating: 4.8,
     students: 9563,
     price: 79,
-    image: courseImage2,
+    image: fallbackCourseImages[1],
   },
   {
+    id: 'fallback-3',
     category: 'Data Science',
     title: 'Data Science & Analytics',
     instructor: 'Dr. Emily Rodriguez',
     rating: 4.9,
     students: 8234,
     price: 99,
-    image: courseImage3,
+    image: fallbackCourseImages[2],
   },
 ];
 
@@ -113,33 +120,209 @@ const testimonials = [
   },
 ];
 
-function RatingStar({ fill }) {
-  return (
-    <span className="relative inline-block h-4 w-4 leading-none">
-      <span className="absolute inset-0 text-gray-300">&#9733;</span>
-      {fill > 0 && (
-        <span
-          className="absolute inset-0 overflow-hidden text-yellow-400"
-          style={{ width: `${fill * 100}%` }}
-        >
-          &#9733;
-        </span>
-      )}
-    </span>
-  );
+function buildCategoryLookup(categories = []) {
+  const lookup = new Map();
+  categories.forEach((category) => {
+    if (!category) {
+      return;
+    }
+    const label = category.name || category.title;
+    if (!label) {
+      return;
+    }
+    if (category.id !== undefined && category.id !== null) {
+      lookup.set(String(category.id), label);
+    }
+    if (category.slug) {
+      lookup.set(String(category.slug), label);
+    }
+  });
+  return lookup;
 }
 
-function renderRating(rating) {
-  const stars = [];
-  for (let i = 0; i < 5; i += 1) {
-    const rawFill = Math.max(0, Math.min(1, rating - i));
-    const fill = rawFill >= 0.75 ? 1 : rawFill >= 0.25 ? 0.5 : 0;
-    stars.push(<RatingStar key={i} fill={fill} />);
+function formatBadgeLabel(course, lookup) {
+  if (!course) {
+    return 'Featured';
   }
-  return stars;
+  if (course.categoryName) {
+    return course.categoryName;
+  }
+  if (course.categoryLabel) {
+    return course.categoryLabel;
+  }
+
+  const candidateKeys = [];
+  if (course.category) {
+    candidateKeys.push(String(course.category));
+  }
+  if (course.categoryId !== undefined && course.categoryId !== null) {
+    candidateKeys.push(String(course.categoryId));
+  }
+  if (course.categorySlug) {
+    candidateKeys.push(String(course.categorySlug));
+  }
+
+  if (lookup) {
+    for (const key of candidateKeys) {
+      if (lookup.has(key)) {
+        return lookup.get(key);
+      }
+    }
+  }
+
+  if (course.level) {
+    return `${course.level}`.replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+  return 'Featured';
+}
+
+function deriveInstructorName(course) {
+  if (!course) {
+    return 'Supernova Faculty';
+  }
+  if (course.instructor) {
+    return course.instructor;
+  }
+  if (course.instructorName) {
+    return course.instructorName;
+  }
+  if (Array.isArray(course.instructors) && course.instructors.length) {
+    const lead = course.instructors[0];
+    if (typeof lead === 'string') {
+      return lead;
+    }
+    if (lead && typeof lead === 'object') {
+      return lead.name || lead.fullName || lead.email || 'Supernova Faculty';
+    }
+  }
+  return 'Supernova Faculty';
+}
+
+function normalizeFeaturedCourses(courses = [], categoryLookup) {
+  const lookup = categoryLookup instanceof Map ? categoryLookup : buildCategoryLookup();
+
+  return courses
+    .map((course, index) => {
+      if (!course) {
+        return null;
+      }
+
+      const resolvedTitle = resolveCourseTitle(course);
+      if (!resolvedTitle) {
+        return null;
+      }
+
+      const priceRaw =
+        course.price !== undefined && course.price !== null
+          ? Number(course.price)
+          : course.tuition !== undefined && course.tuition !== null
+          ? Number(course.tuition)
+          : null;
+      const priceValue = Number.isFinite(priceRaw) ? priceRaw : null;
+      const imageSource = resolveCourseImage(course, fallbackCourseImages, index);
+
+      return {
+        id: String(course.id || `featured-course-${index}`),
+        category: formatBadgeLabel(course, lookup),
+        title: resolvedTitle,
+        instructor: deriveInstructorName(course),
+        price: priceValue,
+        image: imageSource,
+      };
+    })
+    .filter(Boolean);
 }
 
 export default function HomePage() {
+  const [featuredCourses, setFeaturedCourses] = React.useState([]);
+  const [coursesLoading, setCoursesLoading] = React.useState(true);
+  const [coursesNotice, setCoursesNotice] = React.useState(null);
+
+  const querySuffix = React.useMemo(() => {
+    const params = new URLSearchParams();
+    if (BUSINESS_NAME) {
+      params.set('businessName', BUSINESS_NAME);
+    }
+    const query = params.toString();
+    return query ? `?${query}` : '';
+  }, []);
+
+  const activeCoursesPath = React.useMemo(
+    () => `/api/courses${querySuffix ? `${querySuffix}&status=active` : '?status=active'}`,
+    [querySuffix],
+  );
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    async function loadFeaturedCourses() {
+      setCoursesLoading(true);
+      setCoursesNotice(null);
+
+      try {
+        const coursesResponse = await apiFetch(activeCoursesPath);
+        let categoriesResponse = null;
+
+        try {
+          categoriesResponse = await apiFetch(`/api/course-categories${querySuffix}`);
+        } catch {
+          categoriesResponse = null;
+        }
+
+        const coursesPayload = Array.isArray(coursesResponse?.data)
+          ? coursesResponse.data
+          : Array.isArray(coursesResponse)
+          ? coursesResponse
+          : [];
+        const categoriesPayload = Array.isArray(categoriesResponse?.data)
+          ? categoriesResponse.data
+          : Array.isArray(categoriesResponse)
+          ? categoriesResponse
+          : [];
+        const categoryLookup = buildCategoryLookup(categoriesPayload);
+        const activeCourses = coursesPayload.filter(
+          (course) => (course.status || '').toLowerCase() === 'active',
+        );
+        const normalized = normalizeFeaturedCourses(activeCourses, categoryLookup);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (normalized.length) {
+          setFeaturedCourses(normalized.slice(0, 3));
+          setCoursesNotice(null);
+        } else {
+          setFeaturedCourses(fallbackFeaturedCourses);
+          setCoursesNotice({
+            tone: 'info',
+            message:
+              'Add your first course from the admin dashboard to showcase it here. Displaying sample programs for now.',
+          });
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+        setFeaturedCourses(fallbackFeaturedCourses);
+        setCoursesNotice({
+          tone: 'error',
+          message: `${error?.message || 'Unable to load live courses right now.'} Showing sample programs while we restore connectivity.`,
+        });
+      } finally {
+        if (isMounted) {
+          setCoursesLoading(false);
+        }
+      }
+    }
+
+    loadFeaturedCourses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCoursesPath, querySuffix]);
+
   const heroBackgroundStyle = {
     backgroundImage: `linear-gradient(135deg, rgba(14, 165, 233, 0.88), rgba(59, 130, 246, 0.88)), url(${heroBackground})`,
     backgroundSize: 'cover',
@@ -196,7 +379,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="bg-gradient-to-r from-cyan-50 to-blue-50 py-16">
+        {/* <section className="bg-gradient-to-r from-cyan-50 to-blue-50 py-16">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
               {stats.map((stat) => (
@@ -209,9 +392,9 @@ export default function HomePage() {
               ))}
             </div>
           </div>
-        </section>
+        </section> */}
 
-        <section className="py-20">
+        <section className="py-10">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="text-center">
               <span className="text-sm font-semibold uppercase tracking-wide text-cyan-600">
@@ -261,45 +444,80 @@ export default function HomePage() {
             </div>
 
             <div className="mt-14 grid gap-8 md:grid-cols-2 xl:grid-cols-3">
-              {featuredCourses.map((course) => (
-                <div
-                  key={course.title}
-                  className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl transition hover:-translate-y-1 hover:shadow-2xl"
-                >
-                  <div className="relative">
-                    <img
-                      src={course.image}
-                      alt={course.title}
-                      loading="lazy"
-                      className="h-48 w-full object-cover"
-                    />
-                    <span className="absolute left-4 top-4 inline-flex items-center rounded-full bg-blue-600/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                      {course.category}
-                    </span>
-                  </div>
-                  <div className="flex flex-1 flex-col p-6">
-                    <h3 className="text-xl font-semibold text-gray-900">{course.title}</h3>
-                    <p className="mt-2 text-sm text-gray-600">by {course.instructor}</p>
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                      <span className="flex items-center gap-2">
-                        <span className="flex items-center gap-0.5">{renderRating(course.rating)}</span>
-                        <span className="text-gray-500">({course.rating.toFixed(1)})</span>
-                      </span>
-                      <span>{course.students.toLocaleString()} students</span>
+              {coursesLoading
+                ? Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={`featured-skeleton-${index}`}
+                      className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl"
+                    >
+                      <div className="h-48 w-full animate-pulse bg-slate-200" />
+                      <div className="flex flex-1 flex-col gap-4 p-6">
+                        <div className="h-5 w-20 animate-pulse rounded-full bg-slate-200" />
+                        <div className="h-6 w-3/4 animate-pulse rounded-full bg-slate-200" />
+                        <div className="h-4 w-full animate-pulse rounded-full bg-slate-200" />
+                        <div className="mt-auto flex items-center justify-between">
+                          <div className="h-6 w-24 animate-pulse rounded-full bg-slate-200" />
+                          <div className="h-10 w-24 animate-pulse rounded-xl bg-slate-200" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-6 flex items-center justify-between">
-                      <span className="text-2xl font-semibold text-blue-600">${course.price}</span>
+                  ))
+                : featuredCourses.length
+                ? featuredCourses.map((course) => {
+                    const priceLabel = formatPriceLabel(
+                      course.price !== undefined && course.price !== null ? course.price : null,
+                    );
+                    return (
                       <Link
-                        to={`/courses`}
-                        className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
+                        key={course.id || course.title}
+                        to={`/courses/${course.id ?? ""}`}
+                        className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-xl transition hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
                       >
-                        Enroll Now
+                        <div className="relative">
+                          <img
+                            src={course.image}
+                            alt={course.title}
+                            loading="lazy"
+                            className="h-48 w-full object-cover"
+                          />
+                          <span className="absolute left-4 top-4 inline-flex items-center rounded-full bg-blue-600/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
+                            {course.category}
+                          </span>
+                        </div>
+                        <div className="flex flex-1 flex-col p-6">
+                          <h3
+                            className="text-xl font-semibold text-gray-900"
+                            title={course.title}
+                          >
+                            {course.title}
+                          </h3>
+                          <p className="mt-2 text-sm text-gray-600">by {course.instructor}</p>
+                          <div className="mt-6 flex items-center justify-between">
+                            <span className="text-2xl font-semibold text-blue-600">{priceLabel}</span>
+                            <span className="inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition">
+                              See Details
+                            </span>
+                          </div>
+                        </div>
                       </Link>
+                    );
+                  })
+                : (
+                    <div className="col-span-full rounded-3xl bg-white p-8 text-center text-sm text-gray-600 shadow-sm">
+                      No featured courses yet. Check back soon.
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )}
             </div>
+
+            {coursesNotice ? (
+              <p
+                className={`mt-6 text-center text-sm ${
+                  coursesNotice.tone === 'error' ? 'text-rose-600' : 'text-gray-600'
+                }`}
+              >
+                {coursesNotice.message}
+              </p>
+            ) : null}
 
             <div className="mt-12 flex justify-center">
               <Link
@@ -393,11 +611,6 @@ export default function HomePage() {
     </div>
   );
 }
-
-
-
-
-
 
 
 

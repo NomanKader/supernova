@@ -1,7 +1,7 @@
 ﻿import * as React from 'react';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Plus, ShieldQuestion, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Trash2, CheckCircle2, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { DataTable } from '@/components/data-table';
@@ -60,6 +60,7 @@ export default function UsersPage() {
   const [submitError, setSubmitError] = React.useState(null);
   const [deletingId, setDeletingId] = React.useState(null);
   const [deleteError, setDeleteError] = React.useState(null);
+  const [inviteSuccess, setInviteSuccess] = React.useState(null);
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -98,8 +99,18 @@ export default function UsersPage() {
     }
   }, [open, form]);
 
+  React.useEffect(() => {
+    if (!inviteSuccess) {
+      return undefined;
+    }
+
+    const timer = setTimeout(() => setInviteSuccess(null), 6000);
+    return () => clearTimeout(timer);
+  }, [inviteSuccess]);
+
   const onSubmit = async (values) => {
     setSubmitError(null);
+    setInviteSuccess(null);
     setIsSubmitting(true);
 
     try {
@@ -113,6 +124,7 @@ export default function UsersPage() {
 
       await loadUsers();
       setOpen(false);
+      setInviteSuccess(`Invitation sent to ${values.email}.`);
     } catch (error) {
       setSubmitError(error.message || 'Failed to invite user.');
     } finally {
@@ -325,6 +337,24 @@ export default function UsersPage() {
           </DialogContent>
         </Dialog>
       </PageHeader>
+
+      {inviteSuccess ? (
+        <div className="flex items-start gap-3 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 shadow-sm">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" />
+          <div className="flex-1">
+            <p className="font-semibold leading-tight">Invite sent</p>
+            <p className="text-sm text-emerald-800">{inviteSuccess}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setInviteSuccess(null)}
+            className="rounded-md p-1 text-emerald-700 transition hover:bg-emerald-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+            aria-label="Dismiss invite notification"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      ) : null}
 
       <div className="rounded-lg border bg-card p-4">
         <header className="flex flex-col gap-2 border-b pb-3 sm:flex-row sm:items-center sm:justify-between">

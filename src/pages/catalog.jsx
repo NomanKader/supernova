@@ -1,11 +1,12 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 
 import { CourseCard } from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
-import { courses, categories, users } from "@/data/mock-data";
+import { apiFetch, BUSINESS_NAME } from "@/config/api";
+import { resolveCourseImage, resolveCourseTitle } from "@/utils/course";
 
-const categoryFilters = ["all", ...categories.map((category) => category.id)];
 const levelFilters = ["all", "beginner", "intermediate", "advanced"];
 
 const courseMeta = {
@@ -54,34 +55,183 @@ const courseMeta = {
   },
 };
 
-function resolveCategory(categoryId) {
-  return categories.find((category) => category.id === categoryId)?.name ?? "General";
-}
-
-function resolveInstructors(instructorIds = []) {
-  const names = instructorIds
-    .map((instructorId) => users.find((user) => user.id === instructorId)?.name)
-    .filter(Boolean);
-  if (names.length === 0) return "Supernova Mentor Team";
-  if (names.length === 1) return names[0];
-  if (names.length === 2) return `${names[0]} & ${names[1]}`;
-  const last = names[names.length - 1];
-  const others = names.slice(0, -1).join(", ");
-  return `${others} & ${last}`;
-}
+const normalizeDataArray = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+  if (payload && Array.isArray(payload.data)) {
+    return payload.data;
+  }
+  return [];
+};
 
 export default function CoursesPage() {
   const [activeCategory, setActiveCategory] = React.useState("all");
   const [activeLevel, setActiveLevel] = React.useState("all");
+  const [courses, setCourses] = React.useState([]);
+  const [categories, setCategories] = React.useState([]);
+  const [instructors, setInstructors] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  const activeCoursesPath = React.useMemo(() => {
+    const params = new URLSearchParams();
+    if (BUSINESS_NAME) {
+      params.set("businessName", BUSINESS_NAME);
+    }
+    params.set("status", "active");
+    const query = params.toString();
+    return `/api/courses${query ? `?${query}` : ""}`;
+  }, []);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const loadData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const courseResponse = await apiFetch(activeCoursesPath);
+        let categoryData = [];
+        let instructorData = [];
+
+        try {
+          const categoryPath = BUSINESS_NAME
+            ? `/api/course-categories?businessName=${encodeURIComponent(BUSINESS_NAME)}`
+            : "/api/course-categories";
+          const categoriesResponse = await apiFetch(categoryPath);
+          categoryData = normalizeDataArray(categoriesResponse);
+        } catch (categoryError) {
+          console.warn("Failed to load course categories", categoryError);
+        }
+
+        if (BUSINESS_NAME) {
+          try {
+            const usersResponse = await apiFetch(
+              `/api/users?businessName=${encodeURIComponent(BUSINESS_NAME)}`,
+            );
+            instructorData = normalizeDataArray(usersResponse);
+          } catch (usersError) {
+            console.warn("Failed to load instructors", usersError);
+          }
+        }
+
+        if (!isMounted) {
+          return;
+        }
+
+        const courseList = normalizeDataArray(courseResponse);
+        const activeCourses = courseList.filter(
+          (course) => (course.status || '').toLowerCase() === 'active',
+        );
+        setCourses(activeCourses);
+        setCategories(categoryData);
+        setInstructors(instructorData);
+      } catch (fetchError) {
+        if (!isMounted) {
+          return;
+        }
+        setError(fetchError.message || "Failed to load courses.");
+        setCourses([]);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeCoursesPath]);
+
+  const categoryOptions = React.useMemo(
+    () =>
+      categories.map((category) => ({
+        id:
+          category?.id !== undefined && category?.id !== null
+            ? String(category.id)
+            : category?.slug || category?.name || "",
+        label: category?.name || category?.slug || "Category",
+      })),
+    [categories],
+  );
+
+  const categoryFilters = React.useMemo(() => {
+    const ids = categoryOptions.map((option) => option.id).filter(Boolean);
+    return ["all", ...ids];
+  }, [categoryOptions]);
+
+  const categoryLabelMap = React.useMemo(() => {
+    const map = new Map();
+    categoryOptions.forEach((option) => {
+      if (option.id) {
+        map.set(option.id, option.label);
+      }
+    });
+    return map;
+  }, [categoryOptions]);
+
+  const instructorMap = React.useMemo(() => {
+    const map = new Map();
+    instructors.forEach((instructor) => {
+      const key =
+        instructor?.id !== undefined && instructor?.id !== null
+          ? String(instructor.id)
+          : instructor?.email || null;
+      if (key) {
+        map.set(key, instructor);
+      }
+    });
+    return map;
+  }, [instructors]);
+
+  const resolveCategory = React.useCallback(
+    (categoryId) => {
+      if (!categoryId) {
+        return "General";
+      }
+      const label = categoryLabelMap.get(String(categoryId));
+      return label || "General";
+    },
+    [categoryLabelMap],
+  );
+
+  const resolveInstructors = React.useCallback(
+    (instructorIds = []) => {
+      const normalizedIds = Array.isArray(instructorIds)
+        ? instructorIds
+        : instructorIds
+          ? [instructorIds]
+          : [];
+      const names = normalizedIds
+        .map((instructorId) => instructorMap.get(String(instructorId))?.name)
+        .filter(Boolean);
+      if (names.length === 0) return "Supernova Mentor Team";
+      if (names.length === 1) return names[0];
+      if (names.length === 2) return `${names[0]} & ${names[1]}`;
+      const last = names[names.length - 1];
+      const others = names.slice(0, -1).join(", ");
+      return `${others} & ${last}`;
+    },
+    [instructorMap],
+  );
 
   const visibleCourses = React.useMemo(() => {
     return courses.filter((course) => {
       const categoryMatch =
-        activeCategory === "all" ? true : course.categoryId === activeCategory;
+        activeCategory === "all"
+          ? true
+          : String(course.categoryId ?? course.categorySlug ?? "") === activeCategory;
       const levelMatch = activeLevel === "all" ? true : course.level === activeLevel;
       return categoryMatch && levelMatch;
     });
-  }, [activeCategory, activeLevel]);
+  }, [courses, activeCategory, activeLevel]);
+
+  const resolvedTotalCount = courses.length;
 
   return (
     <div className="space-y-10 pb-16">
@@ -103,7 +253,7 @@ export default function CoursesPage() {
               const label =
                 value === "all"
                   ? "All"
-                  : categories.find((category) => category.id === value)?.name ?? value;
+                  : categoryLabelMap.get(value) ?? value ?? "Category";
               const isActive = activeCategory === value;
               return (
                 <Button
@@ -144,50 +294,67 @@ export default function CoursesPage() {
           </div>
         </div>
         <div className="self-end rounded-2xl bg-slate-50 px-4 py-3 text-sm font-medium text-slate-600">
-          Showing {visibleCourses.length} of {courses.length} courses
+          Showing {visibleCourses.length} of {resolvedTotalCount} courses
         </div>
+        {error ? (
+          <div className="rounded-2xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </div>
+        ) : null}
 
-        <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          {visibleCourses.map((course) => {
-            const meta = courseMeta[course.id] ?? {
-              image:
-                "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1200&q=80",
-              price: "$249",
-              originalPrice: null,
-              rating: null,
-              nextStart: "Rolling admissions",
-              reviewCount: null,
-              hours: `${course.lessons} lessons`,
-              students: course.enrollments ?? 0,
-            };
-            const levelLabel =
-              typeof course.level === "string" && course.level.length > 0
-                ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
-                : "All Levels";
+        {loading ? (
+          <div className="flex items-center gap-3 rounded-3xl border border-slate-100 bg-white px-6 py-8 text-slate-500 shadow-sm">
+            <Loader2 className="h-5 w-5 animate-spin text-blue-500" />
+            Loading the latest courses...
+          </div>
+        ) : (
+          <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
+            {visibleCourses.map((course, index) => {
+              const meta = courseMeta[course.id] ?? {
+                image:
+                  "https://images.unsplash.com/photo-1523475472560-d2df97ec485c?auto=format&fit=crop&w=1200&q=80",
+                price: "$249",
+                originalPrice: null,
+                rating: null,
+                nextStart: "Rolling admissions",
+                reviewCount: null,
+                hours: `${course.lessons ?? 0} lessons`,
+                students: course.enrollments ?? 0,
+              };
+              const levelLabel =
+                typeof course.level === "string" && course.level.length > 0
+                  ? course.level.charAt(0).toUpperCase() + course.level.slice(1)
+                  : "All Levels";
 
-            return (
-              <CourseCard
-                key={course.id}
-                id={course.id}
-                title={course.title}
-                category={resolveCategory(course.categoryId)}
-                description={course.description}
-                instructors={resolveInstructors(course.instructorIds)}
-                lessonCount={course.lessons}
-                level={levelLabel}
-                enrollments={course.enrollments ?? 0}
-                nextStart={meta.nextStart}
-                price={meta.price}
-                originalPrice={meta.originalPrice}
-                rating={meta.rating}
-                reviewCount={meta.reviewCount}
-                hours={meta.hours}
-                students={meta.students}
-                image={meta.image}
-              />
-            );
-          })}
-        </div>
+              const resolvedImage =
+                resolveCourseImage(course, meta.image ? [meta.image] : [], index) || meta.image;
+              const resolvedTitle = resolveCourseTitle(course) || "Untitled Course";
+              const numericPrice =
+                course.price !== undefined && course.price !== null
+                  ? Number(course.price)
+                  : null;
+              const resolvedPrice = Number.isFinite(numericPrice) ? numericPrice : meta.price;
+
+              return (
+                <CourseCard
+                  key={course.id}
+                  id={course.id}
+                  title={resolvedTitle}
+                  category={resolveCategory(course.categoryId)}
+                  description={course.description}
+                  instructors={resolveInstructors(course.instructorIds)}
+                  lessonCount={course.lessons}
+                  level={levelLabel}
+                  nextStart={meta.nextStart}
+                  price={resolvedPrice}
+                  originalPrice={meta.originalPrice}
+                  hours={meta.hours}
+                  image={resolvedImage}
+                />
+              );
+            })}
+          </div>
+        )}
 
         <div className="flex flex-col items-center gap-3 rounded-3xl bg-slate-50 py-6 text-center">
           <p className="text-sm text-slate-600">

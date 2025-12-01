@@ -16,6 +16,7 @@ const statusVariantMap = {
   ended: 'outline',
   'awaiting-review': 'outline',
   review: 'outline',
+  inactive: 'outline',
   declined: 'destructive',
   rejected: 'destructive',
   failed: 'destructive',

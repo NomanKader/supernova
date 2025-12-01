@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs/promises');
 const { randomUUID } = require('crypto');
 
-const lessonsRoot = path.join(__dirname, '..', '..', 'assets', 'lessons');
+const lessonsRoot = path.join(__dirname, '..', 'assets', 'lessons');
 
 function sanitizeSegment(value, fallback = 'default') {
   if (!value || typeof value !== 'string') {

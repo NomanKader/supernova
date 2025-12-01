@@ -12,13 +12,9 @@ function buildError(message, statusCode = 400) {
   return error;
 }
 
-async function authenticateAdmin({ email, password, tenantId, businessName }) {
+async function findUserRecord({ email, tenantId, businessName, restrictRole }) {
   if (!email || typeof email !== 'string' || !email.trim()) {
     throw buildError('Email is required.', 400);
-  }
-
-  if (!password || typeof password !== 'string' || !password.trim()) {
-    throw buildError('Password is required.', 400);
   }
 
   const normalizedEmail = email.trim().toLowerCase();
@@ -72,6 +68,21 @@ async function authenticateAdmin({ email, password, tenantId, businessName }) {
     throw buildError('Invalid email or password.', 401);
   }
 
+  const role = String(record.Role || '').toLowerCase();
+  if (restrictRole === 'admin' && role !== 'admin') {
+    throw buildError('Access restricted to admin users.', 403);
+  }
+
+  return record;
+}
+
+async function authenticateAdmin({ email, password, tenantId, businessName }) {
+  if (!password || typeof password !== 'string' || !password.trim()) {
+    throw buildError('Password is required.', 400);
+  }
+
+  const record = await findUserRecord({ email, tenantId, businessName, restrictRole: 'admin' });
+
   if (!record.PasswordHash) {
     throw buildError('Account password is not set. Complete verification first.', 403);
   }
@@ -81,9 +92,33 @@ async function authenticateAdmin({ email, password, tenantId, businessName }) {
     throw buildError('Invalid email or password.', 401);
   }
 
-  const role = String(record.Role || '').toLowerCase();
-  if (role !== 'admin') {
-    throw buildError('Access restricted to admin users.', 403);
+  const status = String(record.Status || '').toLowerCase();
+  if (status && status !== 'active') {
+    throw buildError('Account is not active.', 403);
+  }
+
+  const sessionToken = crypto.randomBytes(24).toString('hex');
+
+  return {
+    token: sessionToken,
+    user: mapUserEntity(record),
+  };
+}
+
+async function authenticateUser({ email, password, tenantId, businessName }) {
+  if (!password || typeof password !== 'string' || !password.trim()) {
+    throw buildError('Password is required.', 400);
+  }
+
+  const record = await findUserRecord({ email, tenantId, businessName });
+
+  if (!record.PasswordHash) {
+    throw buildError('Account password is not set. Complete verification first.', 403);
+  }
+
+  const passwordMatches = await bcrypt.compare(password, record.PasswordHash);
+  if (!passwordMatches) {
+    throw buildError('Invalid email or password.', 401);
   }
 
   const status = String(record.Status || '').toLowerCase();
@@ -101,4 +136,5 @@ async function authenticateAdmin({ email, password, tenantId, businessName }) {
 
 module.exports = {
   authenticateAdmin,
+  authenticateUser,
 };

@@ -1,19 +1,20 @@
 [
   {
-    "id": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
-    "title": "Introduction to React JS",
-    "description": "Learners will have the skills and confidence to build dynamic, responsive, and modern web applications from scratch. They will understand the core concepts of React such as components, state management, hooks, and routing, as well as how to connect APIs and handle real-world data efficiently. Learners will also gain hands-on experience working with Material UI, project structuring, and best practices used in professional development environments. By the end of the course, they’ll be able to create and deploy fully functional React projects and be ready to work independently or contribute effectively as part of a development team.",
+    "id": "a8eea30e-4032-4387-a949-b0fc3e1ad160",
+    "title": "React Basic Course",
+    "description": "Course Description\r\nTesting",
     "categoryId": "1",
     "instructorIds": [
       "11"
     ],
     "level": "beginner",
-    "status": "draft",
+    "status": "active",
     "lessons": 0,
     "enrollments": 0,
-    "updatedAt": "2025-10-30T03:13:02.059Z",
-    "createdAt": "2025-10-30T03:13:02.059Z",
-    "imageUrl": "/assets/courses/photo-1517430816045-df4b7de11d1d-1761793982048.avif",
-    "imageFilename": "photo-1517430816045-df4b7de11d1d-1761793982048.avif"
+    "price": 99,
+    "updatedAt": "2025-12-01T08:39:29.879Z",
+    "createdAt": "2025-11-16T07:56:21.191Z",
+    "imageUrl": "/assets/courses/chatgpt-image-nov-27-2025-02-31-59-pm-1764578369859.png",
+    "imageFilename": "chatgpt-image-nov-27-2025-02-31-59-pm-1764578369859.png"
   }
 ]

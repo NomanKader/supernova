@@ -19,11 +19,22 @@ async function listUsers({ tenantId, businessName }) {
         u.Email,
         u.FirstName,
         u.LastName,
-        u.Role,
-        u.Status,
-        u.CreatedAt,
-        u.UpdatedAt
-      FROM Users u
+      u.Role,
+      CASE
+        WHEN EXISTS (
+          SELECT 1
+          FROM UserInvites ui
+          WHERE ui.UserId = u.UserId
+            AND ui.TenantId = u.TenantId
+            AND ui.ConsumedAt IS NULL
+            AND ui.ExpiresAt > SYSDATETIMEOFFSET()
+        )
+        THEN 'invited'
+        ELSE u.Status
+      END AS Status,
+      u.CreatedAt,
+      u.UpdatedAt
+    FROM Users u
       INNER JOIN Tenants t ON u.TenantId = t.TenantId
       WHERE u.TenantId = @TenantId
       ORDER BY u.CreatedAt DESC;

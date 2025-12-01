@@ -44,6 +44,14 @@ export default function CheckoutPage() {
 
   const [status, setStatus] = React.useState('');
   const [copyState, setCopyState] = React.useState('');
+  const proofValue = form.watch('proof');
+  const proofFile =
+    proofValue instanceof FileList
+      ? proofValue[0]
+      : Array.isArray(proofValue) && proofValue.length
+        ? proofValue[0]
+        : undefined;
+  const [previewUrl, setPreviewUrl] = React.useState('');
 
   if (!course) {
     return <Navigate to="/courses" replace />;
@@ -71,6 +79,28 @@ export default function CheckoutPage() {
     setCopyState('');
   }, [selectedMethod]);
 
+  React.useEffect(() => {
+    if (!proofFile) {
+      setPreviewUrl((previous) => {
+        if (previous) {
+          URL.revokeObjectURL(previous);
+        }
+        return '';
+      });
+      return undefined;
+    }
+    const objectUrl = URL.createObjectURL(proofFile);
+    setPreviewUrl((previous) => {
+      if (previous) {
+        URL.revokeObjectURL(previous);
+      }
+      return objectUrl;
+    });
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [proofFile]);
+
   const handleCopy = async () => {
     const number = paymentNumbers[selectedMethod];
     try {
@@ -81,6 +111,53 @@ export default function CheckoutPage() {
       console.warn('Clipboard copy failed', error);
       setCopyState('Copy failed');
     }
+  };
+
+  const handleClearProof = () => {
+    form.setValue('proof', undefined);
+    setPreviewUrl((previous) => {
+      if (previous) {
+        URL.revokeObjectURL(previous);
+      }
+      return '';
+    });
+  };
+
+  const renderProofPreview = () => {
+    if (!proofFile) {
+      return null;
+    }
+
+    const formattedSize =
+      proofFile.size >= 1024 * 1024
+        ? `${(proofFile.size / (1024 * 1024)).toFixed(1)} MB`
+        : `${Math.round(proofFile.size / 1024)} KB`;
+
+    return (
+      <div className="flex flex-col gap-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-sm font-medium text-foreground">{proofFile.name}</p>
+            <p className="text-xs text-muted-foreground">{formattedSize}</p>
+          </div>
+          <Button type="button" variant="ghost" size="sm" onClick={handleClearProof}>
+            Remove
+          </Button>
+        </div>
+        {previewUrl ? (
+          <div className="relative overflow-hidden rounded-lg border bg-background shadow-sm">
+            <img
+              src={previewUrl}
+              alt="Payment proof preview"
+              className="max-h-64 w-full object-cover"
+            />
+          </div>
+        ) : null}
+        <p className="text-xs text-muted-foreground">
+          Admins verify manual payment details against this screenshot before unlocking the course.
+        </p>
+      </div>
+    );
   };
 
   const phoneHighlight = (
@@ -163,9 +240,14 @@ export default function CheckoutPage() {
                   <FormItem>
                     <FormLabel>Upload screenshot</FormLabel>
                     <FormControl>
-                      <Input type="file" accept="image/*" onChange={(event) => field.onChange(event.target.files)} />
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => field.onChange(event.target.files)}
+                      />
                     </FormControl>
                     <FormMessage />
+                    {renderProofPreview()}
                   </FormItem>
                 )}
               />

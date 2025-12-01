@@ -17,6 +17,7 @@ const adminBase = '/admin';
 export const navLinks = [
   { title: 'Overview', href: `${adminBase}`, icon: Home },
   { title: 'Users', href: `${adminBase}/users`, icon: Users },
+  { title: 'Customers', href: `${adminBase}/customers`, icon: MessagesSquare },
   { title: 'Courses', href: `${adminBase}/courses`, icon: BookOpen },
   { title: 'Course categories', href: `${adminBase}/course-categories`, icon: FolderKanban },
   { title: 'Lessons', href: `${adminBase}/lessons`, icon: Layers2 },

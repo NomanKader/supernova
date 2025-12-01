@@ -36,7 +36,7 @@ function loadConfig() {
     .toLowerCase()
     .trim() === 'true';
 
-  const localAppUrl = normalizeString(process.env.APP_LOCAL_URL) || 'http://localhost:5173';
+  const localAppUrl = normalizeString(process.env.APP_LOCAL_URL) || 'http://localhost:3000';
   const productionAppUrl = normalizeString(process.env.APP_URL);
   const resolvedAppUrl = isProductionApp
     ? productionAppUrl || localAppUrl
@@ -60,7 +60,9 @@ function loadConfig() {
     smtpUser: process.env.SMTP_USER || null,
     smtpPassword: process.env.SMTP_PASSWORD || null,
     smtpFrom: process.env.SMTP_FROM || null,
+    supportEmail: normalizeString(process.env.SUPPORT_EMAIL) || 'support@edusupernova.com',
     inviteExpiryHours: parseInt(process.env.INVITE_EXPIRY_HOURS, 10) || 72,
+    googleClientId: normalizeString(process.env.GOOGLE_CLIENT_ID) || null,
   };
 
   return cachedConfig;

@@ -82,26 +82,26 @@ const plans = [
 ];
 
 const faqs = [
-  {
-    question: 'Can I cancel anytime?',
-    answer:
-      'Absolutely. Manage your subscription from the dashboard and cancel whenever you need - no hidden fees.',
-  },
-  {
-    question: 'Do you offer a free trial?',
-    answer:
-      'New members can explore the full platform for 7 days free. Cancel before the trial ends if it is not a fit.',
-  },
+  // {
+  //   question: 'Can I cancel anytime?',
+  //   answer:
+  //     'Absolutely. Manage your subscription from the dashboard and cancel whenever you need - no hidden fees.',
+  // },
+  // {
+  //   question: 'Do you offer a free trial?',
+  //   answer:
+  //     'New members can explore the full platform for 7 days free. Cancel before the trial ends if it is not a fit.',
+  // },
   {
     question: 'Are certificates recognised by employers?',
     answer:
       'Yes. Supernova certificates are industry-recognised and help demonstrate your commitment to growth.',
   },
-  {
-    question: 'Can I switch between plans later?',
-    answer:
-      'You can upgrade or downgrade at any time. Changes take effect on your next billing cycle.',
-  },
+  // {
+  //   question: 'Can I switch between plans later?',
+  //   answer:
+  //     'You can upgrade or downgrade at any time. Changes take effect on your next billing cycle.',
+  // },
   {
     question: 'Is there a money-back guarantee?',
     answer:

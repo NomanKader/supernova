@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BookMarked, Loader2, Plus } from 'lucide-react';
+import { BookMarked, ImageUp, Loader2, Plus, Pencil } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -38,6 +38,7 @@ import {
 } from '@/components/ui/select';
 import { Combobox } from '@/components/ui/combobox';
 import { apiFetch, BUSINESS_NAME } from '@/config/api';
+import { buildAssetUrl } from '@/utils/course';
 import { categories as mockCategories, users } from '@/data/mock-data';
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
@@ -48,16 +49,26 @@ const courseSchema = z.object({
   instructorId: z.string().min(1, 'Select an instructor'),
   categoryId: z.string().min(1, 'Select a category'),
   level: z.enum(['beginner', 'intermediate', 'advanced']),
+  status: z.enum(['active', 'inactive']),
+  price: z.coerce
+    .number({
+      invalid_type_error: 'Price must be a number or zero for free courses',
+    })
+    .min(0, 'Price cannot be negative'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   coverImage: z
     .any()
-    .refine((file) => isFileInstance(file) && file.size > 0, 'Course image is required')
+    .optional()
     .refine(
-      (file) => !isFileInstance(file) || file.type.startsWith('image/'),
+      (file) => file == null || (isFileInstance(file) && file.size > 0),
+      'Course image must have a file attached',
+    )
+    .refine(
+      (file) => file == null || (isFileInstance(file) && file.type.startsWith('image/')),
       'Course image must be an image file',
     )
     .refine(
-      (file) => !isFileInstance(file) || file.size <= MAX_IMAGE_SIZE,
+      (file) => file == null || (isFileInstance(file) && file.size <= MAX_IMAGE_SIZE),
       'Course image must be 5 MB or smaller',
     ),
 });
@@ -67,6 +78,8 @@ const defaultValues = {
   instructorId: '',
   categoryId: '',
   level: 'beginner',
+  status: 'active',
+  price: 0,
   description: '',
   coverImage: null,
 };
@@ -117,8 +130,246 @@ function normalizeInstructors(source = []) {
     }));
 }
 
+function formatFileSize(bytes) {
+  if (!Number.isFinite(bytes)) {
+    return '';
+  }
+  if (bytes >= 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+  if (bytes >= 1024) {
+    return `${(bytes / 1024).toFixed(1)} KB`;
+  }
+  return `${bytes} B`;
+}
+
+function CoverImageDropzone({
+  value,
+  onChange,
+  onBlur,
+  fieldRef,
+  inputRef,
+  disabled,
+  existingPreviewUrl,
+}) {
+  const [isDragActive, setIsDragActive] = React.useState(false);
+  const [previewUrl, setPreviewUrl] = React.useState(existingPreviewUrl || null);
+  const dragCounter = React.useRef(0);
+  const internalInputRef = React.useRef(null);
+
+  const assignInputRef = React.useCallback(
+    (node) => {
+      internalInputRef.current = node;
+      if (typeof fieldRef === 'function') {
+        fieldRef(node);
+      } else if (fieldRef && 'current' in fieldRef) {
+        fieldRef.current = node;
+      }
+      if (inputRef) {
+        inputRef.current = node;
+      }
+    },
+    [fieldRef, inputRef],
+  );
+
+  const setFileValue = React.useCallback(
+    (file) => {
+      onChange(file);
+      if (typeof onBlur === 'function') {
+        onBlur();
+      }
+      if (internalInputRef.current) {
+        internalInputRef.current.value = '';
+      }
+    },
+    [onChange, onBlur],
+  );
+
+  const handleFiles = React.useCallback(
+    (fileList) => {
+      if (!fileList || !fileList.length) {
+        return;
+      }
+      const file = fileList[0];
+      if (file) {
+        setFileValue(file);
+      }
+    },
+    [setFileValue],
+  );
+
+  const handleInputChange = React.useCallback(
+    (event) => {
+      handleFiles(event.target.files);
+    },
+    [handleFiles],
+  );
+
+  const handleDrop = React.useCallback(
+    (event) => {
+      event.preventDefault();
+      dragCounter.current = 0;
+      setIsDragActive(false);
+      if (disabled) {
+        return;
+      }
+      handleFiles(event.dataTransfer?.files);
+    },
+    [disabled, handleFiles],
+  );
+
+  const handleDragEnter = React.useCallback((event) => {
+    event.preventDefault();
+    if (disabled) {
+      return;
+    }
+    dragCounter.current += 1;
+    setIsDragActive(true);
+  }, [disabled]);
+
+  const handleDragLeave = React.useCallback((event) => {
+    event.preventDefault();
+    dragCounter.current = Math.max(0, dragCounter.current - 1);
+    if (dragCounter.current === 0) {
+      setIsDragActive(false);
+    }
+  }, []);
+
+  const handleDragOver = React.useCallback((event) => {
+    event.preventDefault();
+  }, []);
+
+  const handlePaste = React.useCallback(
+    (event) => {
+      if (disabled) {
+        return;
+      }
+      const files = event.clipboardData?.files;
+      if (files && files.length) {
+        event.preventDefault();
+        handleFiles(files);
+      }
+    },
+    [disabled, handleFiles],
+  );
+
+  const handleClick = React.useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    internalInputRef.current?.click();
+  }, [disabled]);
+
+  const handleKeyDown = React.useCallback(
+    (event) => {
+      if (disabled) {
+        return;
+      }
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        internalInputRef.current?.click();
+      }
+    },
+    [disabled],
+  );
+
+  const handleClear = React.useCallback(() => {
+    if (disabled) {
+      return;
+    }
+    setFileValue(null);
+    setPreviewUrl(null);
+  }, [disabled, setFileValue]);
+
+  React.useEffect(() => {
+    if (value && isFileInstance(value)) {
+      const objectUrl = URL.createObjectURL(value);
+      setPreviewUrl(objectUrl);
+      return () => {
+        URL.revokeObjectURL(objectUrl);
+      };
+    }
+    setPreviewUrl(existingPreviewUrl || null);
+    return undefined;
+  }, [value, existingPreviewUrl]);
+
+  const hasFile = value && isFileInstance(value);
+  const hasPreview = !!previewUrl;
+
+  return (
+    <>
+      <input
+        type="file"
+        accept="image/*"
+        ref={assignInputRef}
+        onChange={handleInputChange}
+        onBlur={onBlur}
+        className="sr-only"
+        tabIndex={-1}
+      />
+      <div
+        role="button"
+        tabIndex={disabled ? -1 : 0}
+        aria-disabled={disabled}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onPaste={handlePaste}
+        className={`flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-6 text-center transition ${
+          disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'
+        } ${isDragActive ? 'border-primary bg-primary/5 text-primary' : 'border-gray-200 text-gray-500'}`}
+      >
+        <ImageUp className="h-10 w-10 text-current" aria-hidden="true" />
+        <p className="mt-3 text-base font-semibold text-gray-900">
+          {hasFile ? 'Replace image' : 'Drag & drop your cover image'}
+        </p>
+        <p className="mt-1 text-sm text-gray-500">
+          {disabled
+            ? 'Uploading is disabled right now'
+            : 'Click to browse or press Ctrl+V to paste from your clipboard.'}
+        </p>
+        <p className="mt-1 text-xs text-gray-400">PNG, JPG, GIF up to 5 MB.</p>
+        {hasPreview ? (
+          <div className="mt-4 w-full rounded-xl border border-dashed border-gray-200 bg-white/70 p-3 text-left">
+            <div className="flex items-center gap-3">
+              {previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt={hasFile ? value.name : 'Current course cover'}
+                  className="h-14 w-14 rounded-lg object-cover"
+                />
+              ) : null}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-gray-900">
+                  {hasFile ? value.name : 'Current cover image'}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {hasFile ? formatFileSize(value.size) : 'Stored on the server'}
+                </p>
+              </div>
+              {hasFile ? (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  className="text-xs font-medium text-primary hover:underline"
+                >
+                  Remove
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
 export default function CoursesPage() {
   const [open, setOpen] = React.useState(false);
+  const [editingCourse, setEditingCourse] = React.useState(null);
   const [categoryFilter, setCategoryFilter] = React.useState(null);
   const initialMockCategories = React.useMemo(() => normalizeCategories(mockCategories), []);
   const [categoryOptions, setCategoryOptions] = React.useState(initialMockCategories);
@@ -134,6 +385,11 @@ export default function CoursesPage() {
   const [creatingCourse, setCreatingCourse] = React.useState(false);
   const [createError, setCreateError] = React.useState(null);
   const fileInputRef = React.useRef(null);
+  const isEditing = Boolean(editingCourse);
+  const editingPreviewUrl = React.useMemo(
+    () => (editingCourse?.imageUrl ? buildAssetUrl(editingCourse.imageUrl) : null),
+    [editingCourse],
+  );
 
   const querySuffix = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -143,6 +399,11 @@ export default function CoursesPage() {
     const query = params.toString();
     return query ? `?${query}` : '';
   }, []);
+
+  const adminCoursesPath = React.useMemo(
+    () => `/api/courses${querySuffix ? `${querySuffix}&status=all` : '?status=all'}`,
+    [querySuffix],
+  );
 
   const loadCategories = React.useCallback(async () => {
     setCategoriesLoading(true);
@@ -183,7 +444,7 @@ export default function CoursesPage() {
     setCoursesError(null);
 
     try {
-      const response = await apiFetch(`/api/courses${querySuffix}`);
+      const response = await apiFetch(adminCoursesPath);
       const payload = Array.isArray(response?.data)
         ? response.data
         : Array.isArray(response)
@@ -196,7 +457,12 @@ export default function CoursesPage() {
     } finally {
       setCoursesLoading(false);
     }
-  }, [querySuffix]);
+  }, [adminCoursesPath]);
+
+  const handleEditCourse = React.useCallback((course) => {
+    setEditingCourse(course);
+    setOpen(true);
+  }, []);
 
   const form = useForm({
     resolver: zodResolver(courseSchema),
@@ -228,16 +494,41 @@ export default function CoursesPage() {
   }, [instructorOptions, form]);
 
   React.useEffect(() => {
+    if (editingCourse) {
+      form.reset({
+        title: editingCourse.title ?? '',
+        categoryId: String(editingCourse.categoryId ?? categoryOptions[0]?.id ?? ''),
+        instructorId: String(
+          editingCourse.instructorIds?.[0] ??
+            editingCourse.instructorId ??
+            instructorOptions[0]?.id ??
+            '',
+        ),
+        level:
+          typeof editingCourse.level === 'string' && editingCourse.level
+            ? editingCourse.level
+            : 'beginner',
+        status: editingCourse.status === 'active' ? 'active' : 'inactive',
+        price: Number.isFinite(editingCourse.price) ? Number(editingCourse.price) : 0,
+        description: editingCourse.description ?? '',
+        coverImage: null,
+      });
+    }
+  }, [editingCourse, form, categoryOptions, instructorOptions]);
+
+  React.useEffect(() => {
     if (!open) {
       setCreateError(null);
       form.reset({
         ...defaultValues,
         categoryId: categoryOptions[0]?.id ?? '',
         instructorId: instructorOptions[0]?.id ?? '',
+        status: 'active',
       });
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
+      setEditingCourse(null);
     }
   }, [open, form, categoryOptions, instructorOptions]);
 
@@ -293,7 +584,7 @@ export default function CoursesPage() {
   }, [categoryFilter, categoryLookup, coursesData]);
 
   const publishingQueue = React.useMemo(
-    () => coursesData.filter((course) => course.status !== 'published'),
+    () => coursesData.filter((course) => (course.status || '').toLowerCase() !== 'active'),
     [coursesData],
   );
 
@@ -347,8 +638,24 @@ export default function CoursesPage() {
           return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleDateString();
         },
       },
+      {
+        header: 'Actions',
+        id: 'actions',
+        cell: ({ row }) => (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:text-primary"
+            onClick={() => handleEditCourse(row.original)}
+          >
+            <Pencil className="mr-1 h-4 w-4" />
+            Edit
+          </Button>
+        ),
+      },
     ],
-    [categoryLookup],
+    [categoryLookup, handleEditCourse],
   );
 
   const onSubmit = async (values) => {
@@ -356,16 +663,30 @@ export default function CoursesPage() {
     setCreatingCourse(true);
 
     try {
+      const editing = Boolean(editingCourse);
+      if (!editing && !isFileInstance(values.coverImage)) {
+        form.setError('coverImage', { type: 'manual', message: 'Course image is required.' });
+        setCreatingCourse(false);
+        return;
+      }
+
       const formData = new FormData();
       formData.append('title', values.title);
       formData.append('description', values.description);
       formData.append('categoryId', values.categoryId);
       formData.append('instructorId', values.instructorId);
       formData.append('level', values.level);
-      formData.append('image', values.coverImage);
+      formData.append('status', values.status);
+      formData.append('price', values.price != null ? String(values.price) : '0');
+      if (isFileInstance(values.coverImage)) {
+        formData.append('image', values.coverImage);
+      }
 
-      const response = await apiFetch(`/api/courses${querySuffix}`, {
-        method: 'POST',
+      const endpoint = editing
+        ? `/api/courses/${editingCourse.id}${querySuffix}`
+        : `/api/courses${querySuffix}`;
+      const response = await apiFetch(endpoint, {
+        method: editing ? 'PUT' : 'POST',
         body: formData,
       });
       const created =
@@ -377,6 +698,9 @@ export default function CoursesPage() {
 
       if (created && typeof created === 'object') {
         setCoursesData((previous) => {
+          if (editing) {
+            return previous.map((course) => (course.id === created.id ? created : course));
+          }
           const withoutDuplicate = previous.filter((course) => course.id !== created.id);
           return [created, ...withoutDuplicate];
         });
@@ -408,15 +732,22 @@ export default function CoursesPage() {
       >
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
-            <Button className="flex items-center gap-2">
+            <Button
+              className="flex items-center gap-2"
+              onClick={() => {
+                setEditingCourse(null);
+              }}
+            >
               <Plus className="h-4 w-4" /> New course
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Draft new course</DialogTitle>
+              <DialogTitle>{isEditing ? 'Edit course' : 'Create new course'}</DialogTitle>
               <DialogDescription>
-                Start a new course blueprint. You can add lessons and assets after saving.
+                {isEditing
+                  ? 'Update the course details, pricing, and visibility status.'
+                  : 'Start a new course blueprint. You can add lessons and assets after saving.'}
               </DialogDescription>
             </DialogHeader>
 
@@ -499,6 +830,50 @@ export default function CoursesPage() {
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Price (USD)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="0.00"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormDescription>Enter 0 to make this course free.</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="inactive">Inactive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Only active courses are visible on the public site.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <FormField
                   control={form.control}
@@ -551,20 +926,22 @@ export default function CoursesPage() {
                     <FormItem>
                       <FormLabel>Course image</FormLabel>
                       <FormControl>
-                        <Input
-                          type="file"
-                          accept="image/*"
-                          onChange={(event) => {
-                            const file = event.target.files?.[0] ?? null;
-                            field.onChange(file);
-                          }}
-                          ref={(element) => {
-                            field.ref(element);
-                            fileInputRef.current = element;
-                          }}
+                        <CoverImageDropzone
+                          value={field.value}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          fieldRef={field.ref}
+                          inputRef={fileInputRef}
+                          disabled={creatingCourse}
+                          existingPreviewUrl={isEditing ? editingPreviewUrl : null}
                         />
                       </FormControl>
-                      <FormDescription>Upload a single cover image (max 5 MB).</FormDescription>
+                      <FormDescription>
+                        Upload a single cover image (max 5 MB).
+                        {isEditing && editingCourse?.imageUrl
+                          ? ' The existing image will be kept if you do not upload a new file.'
+                          : null}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -590,10 +967,10 @@ export default function CoursesPage() {
                     {creatingCourse ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
+                        {isEditing ? 'Updating...' : 'Saving...'}
                       </>
                     ) : (
-                      'Create blueprint'
+                      (isEditing ? 'Save changes' : 'Create blueprint')
                     )}
                   </Button>
                 </DialogFooter>
@@ -675,7 +1052,7 @@ export default function CoursesPage() {
             </p>
           </div>
           {publishingQueue.length > 0 ? (
-            <Badge variant="secondary">{publishingQueue.length} in publish queue</Badge>
+            <Badge variant="secondary">{publishingQueue.length} need activation</Badge>
           ) : null}
         </header>
         {coursesError ? (

@@ -1,5 +1,6 @@
 const ALLOWED_ROLES = ['student', 'instructor', 'admin'];
 const DEFAULT_STATUS = 'invited';
+const ACTIVE_STATUS = 'active';
 
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -62,6 +63,14 @@ function validateCreateUserPayload(payload = {}) {
   }
 
   const { firstName, lastName } = splitName(name);
+  const sendInvite = Boolean(payload.sendInvite);
+
+  const normalizedStatus =
+    typeof payload.status === 'string' && payload.status.trim()
+      ? payload.status.trim().toLowerCase()
+      : sendInvite
+        ? DEFAULT_STATUS
+        : ACTIVE_STATUS;
 
   return {
     firstName,
@@ -70,10 +79,8 @@ function validateCreateUserPayload(payload = {}) {
     role,
     businessName,
     tenantId,
-    status: typeof payload.status === 'string' && payload.status.trim()
-      ? payload.status.trim().toLowerCase()
-      : DEFAULT_STATUS,
-    sendInvite: Boolean(payload.sendInvite),
+    status: normalizedStatus,
+    sendInvite,
   };
 }
 

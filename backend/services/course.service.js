@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs/promises');
 const { randomUUID } = require('crypto');
 
-const assetsDir = path.join(__dirname, '..', '..', 'assets');
+const assetsDir = path.join(__dirname, '..', 'assets');
 const courseImagesDir = path.join(assetsDir, 'courses');
 const dataFile = path.join(assetsDir, 'courses.json');
 
@@ -33,8 +33,44 @@ async function writeCourses(courses) {
   await fs.writeFile(dataFile, JSON.stringify(courses, null, 2), 'utf8');
 }
 
-async function listCourses() {
-  return readCourses();
+function normalizePrice(value) {
+  if (value === undefined || value === null || value === '') {
+    return 0;
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    return 0;
+  }
+  return Math.round(parsed * 100) / 100;
+}
+
+function normalizeStatus(value, fallback = 'inactive') {
+  const normalized = typeof value === 'string' ? value.toLowerCase() : '';
+  if (normalized === 'active') {
+    return 'active';
+  }
+  if (normalized === 'inactive') {
+    return 'inactive';
+  }
+  return fallback === 'active' ? 'active' : 'inactive';
+}
+
+async function listCourses(options = {}) {
+  const courses = await readCourses();
+  const normalized = courses.map((course) => ({
+    ...course,
+    price: normalizePrice(course.price),
+    status: normalizeStatus(course.status, 'inactive'),
+  }));
+
+  const { status } = options;
+  if (!status || status === 'active') {
+    return normalized.filter((course) => course.status === 'active');
+  }
+  if (status === 'inactive') {
+    return normalized.filter((course) => course.status === 'inactive');
+  }
+  return normalized;
 }
 
 async function createCourse(payload) {
@@ -47,11 +83,12 @@ async function createCourse(payload) {
     categoryId: payload.categoryId || null,
     instructorIds: payload.instructorId ? [payload.instructorId] : [],
     level: payload.level || 'beginner',
-    status: payload.status || 'draft',
+    status: normalizeStatus(payload.status, 'active'),
     lessons: payload.lessons ?? 0,
     enrollments: payload.enrollments ?? 0,
     updatedAt: timestamp,
     createdAt: timestamp,
+    price: normalizePrice(payload.price),
     imageUrl: payload.imageUrl ?? null,
     imageFilename: payload.imageFilename ?? null,
   };
@@ -62,9 +99,58 @@ async function createCourse(payload) {
   return course;
 }
 
+async function updateCourse(courseId, payload) {
+  const courses = await readCourses();
+  const index = courses.findIndex((course) => String(course.id) === String(courseId));
+
+  if (index === -1) {
+    throw new Error('Course not found.');
+  }
+
+  const timestamp = new Date().toISOString();
+  const existing = courses[index];
+  const nextImageFilename = payload.imageFilename ?? existing.imageFilename;
+  const nextImageUrl = payload.imageUrl ?? existing.imageUrl;
+
+  if (
+    payload.imageFilename &&
+    existing.imageFilename &&
+    existing.imageFilename !== payload.imageFilename
+  ) {
+    const previousPath = path.join(courseImagesDir, existing.imageFilename);
+    try {
+      await fs.unlink(previousPath);
+    } catch {
+      // ignore file deletion errors
+    }
+  }
+
+  const updated = {
+    ...existing,
+    title: payload.title ?? existing.title,
+    description: payload.description ?? existing.description,
+    categoryId: payload.categoryId ?? existing.categoryId,
+    instructorIds: payload.instructorId ? [payload.instructorId] : existing.instructorIds,
+    level: payload.level ?? existing.level,
+    status: normalizeStatus(payload.status ?? existing.status, existing.status),
+    lessons: payload.lessons ?? existing.lessons,
+    enrollments: payload.enrollments ?? existing.enrollments,
+    price: normalizePrice(payload.price ?? existing.price),
+    imageUrl: nextImageUrl,
+    imageFilename: nextImageFilename,
+    updatedAt: timestamp,
+  };
+
+  courses[index] = updated;
+  await writeCourses(courses);
+
+  return updated;
+}
+
 module.exports = {
   listCourses,
   createCourse,
+  updateCourse,
   ensureStorage,
   courseImagesDir,
 };
