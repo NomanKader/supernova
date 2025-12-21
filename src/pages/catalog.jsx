@@ -4,8 +4,9 @@ import { Loader2 } from "lucide-react";
 
 import { CourseCard } from "@/components/CourseCard";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/components/marketing/auth-context";
 import { apiFetch, BUSINESS_NAME } from "@/config/api";
-import { resolveCourseImage, resolveCourseTitle } from "@/utils/course";
+import { resolveCourseImage, resolveCourseTitle, formatDurationLabel } from "@/utils/course";
 
 const levelFilters = ["all", "beginner", "intermediate", "advanced"];
 
@@ -66,6 +67,7 @@ const normalizeDataArray = (payload) => {
 };
 
 export default function CoursesPage() {
+  const { isAuthenticated, user } = useAuth();
   const [activeCategory, setActiveCategory] = React.useState("all");
   const [activeLevel, setActiveLevel] = React.useState("all");
   const [courses, setCourses] = React.useState([]);
@@ -73,6 +75,9 @@ export default function CoursesPage() {
   const [instructors, setInstructors] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
+  const [enrollmentLookup, setEnrollmentLookup] = React.useState(() => new Map());
+  const [enrollmentError, setEnrollmentError] = React.useState("");
+  const [enrollmentLoading, setEnrollmentLoading] = React.useState(false);
 
   const activeCoursesPath = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -147,6 +152,76 @@ export default function CoursesPage() {
       isMounted = false;
     };
   }, [activeCoursesPath]);
+
+  React.useEffect(() => {
+    if (!isAuthenticated || (!user?.email && user?.id == null)) {
+      setEnrollmentLookup(new Map());
+      setEnrollmentError("");
+      setEnrollmentLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadEnrollmentStatus = async () => {
+      setEnrollmentError("");
+      setEnrollmentLoading(true);
+      try {
+        const params = new URLSearchParams();
+        if (BUSINESS_NAME) {
+          params.set("businessName", BUSINESS_NAME);
+        }
+        if (user?.email) {
+          params.set("learnerEmail", user.email);
+        }
+        if (user?.id !== undefined && user?.id !== null) {
+          params.set("userId", String(user.id));
+        }
+        const query = params.toString();
+        const endpoint = `/api/enrollments/manual${query ? `?${query}` : ""}`;
+        const response = await apiFetch(endpoint);
+        if (!isMounted) {
+          return;
+        }
+        const dataset = normalizeDataArray(response);
+        const map = new Map();
+        dataset.forEach((entry) => {
+          if (!entry || entry.courseId === undefined || entry.courseId === null) {
+            return;
+          }
+          const key = String(entry.courseId);
+          const existing = map.get(key);
+          if (!existing) {
+            map.set(key, entry);
+            return;
+          }
+          const existingTime = existing.submittedAt
+            ? new Date(existing.submittedAt).getTime()
+            : 0;
+          const nextTime = entry.submittedAt ? new Date(entry.submittedAt).getTime() : 0;
+          if (!Number.isFinite(existingTime) || nextTime >= existingTime) {
+            map.set(key, entry);
+          }
+        });
+        setEnrollmentLookup(map);
+      } catch (err) {
+        if (isMounted) {
+          setEnrollmentError(err.message || "Unable to load your enrollment status.");
+          setEnrollmentLookup(new Map());
+        }
+      } finally {
+        if (isMounted) {
+          setEnrollmentLoading(false);
+        }
+      }
+    };
+
+    loadEnrollmentStatus();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isAuthenticated, user?.email, user?.id]);
 
   const categoryOptions = React.useMemo(
     () =>
@@ -301,6 +376,11 @@ export default function CoursesPage() {
             {error}
           </div>
         ) : null}
+        {isAuthenticated && enrollmentError ? (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+            {enrollmentError}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="flex items-center gap-3 rounded-3xl border border-slate-100 bg-white px-6 py-8 text-slate-500 shadow-sm">
@@ -334,6 +414,22 @@ export default function CoursesPage() {
                   ? Number(course.price)
                   : null;
               const resolvedPrice = Number.isFinite(numericPrice) ? numericPrice : meta.price;
+              const durationSeconds =
+                course.durationSeconds !== undefined && course.durationSeconds !== null
+                  ? Number(course.durationSeconds)
+                  : null;
+              const durationLabel =
+                Number.isFinite(durationSeconds) && durationSeconds > 0
+                  ? formatDurationLabel(durationSeconds)
+                  : null;
+              const enrollmentRecord = enrollmentLookup.get(String(course.id));
+              const statusForCourse = enrollmentRecord?.status || null;
+              const rejectionNotes =
+                statusForCourse && statusForCourse.toLowerCase() === "rejected"
+                  ? (enrollmentRecord?.reviewNotes?.trim()
+                      ? enrollmentRecord.reviewNotes
+                      : enrollmentRecord?.notes || null)
+                  : null;
 
               return (
                 <CourseCard
@@ -348,8 +444,11 @@ export default function CoursesPage() {
                   nextStart={meta.nextStart}
                   price={resolvedPrice}
                   originalPrice={meta.originalPrice}
-                  hours={meta.hours}
+                  hours={durationLabel ?? meta.hours}
+                  durationSeconds={durationSeconds && Number.isFinite(durationSeconds) ? durationSeconds : undefined}
                   image={resolvedImage}
+                  enrollmentStatus={statusForCourse}
+                  enrollmentNotes={rejectionNotes}
                 />
               );
             })}

@@ -11,8 +11,8 @@ const navItems = [
   { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
-  { label: 'Promotions', to: '/promotions' },
-  { label: 'Affiliate', to: '/affiliate-program' },
+  // { label: 'Promotions', to: '/promotions' },
+  // { label: 'Affiliate', to: '/affiliate-program' },
 ];
 
 export function NavigationBarComponent() {

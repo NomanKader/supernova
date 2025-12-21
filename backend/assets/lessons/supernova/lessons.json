@@ -10,7 +10,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 5363774,
     "sizeMB": 5.12,
-    "uploadedAt": "2025-11-18T09:58:57.789Z"
+    "uploadedAt": "2025-11-18T09:58:57.789Z",
+    "durationSeconds": 39
   },
   {
     "id": "eded5663-9895-4f4c-b4c0-185bf8620c09",
@@ -23,7 +24,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 5363774,
     "sizeMB": 5.12,
-    "uploadedAt": "2025-11-18T09:58:57.892Z"
+    "uploadedAt": "2025-11-18T09:58:57.892Z",
+    "durationSeconds": 39
   },
   {
     "id": "98b7060e-a31d-44db-b5e4-a13d8f4fdd6d",
@@ -36,6 +38,7 @@
     "mimeType": "video/mp4",
     "sizeBytes": 5363774,
     "sizeMB": 5.12,
-    "uploadedAt": "2025-11-18T09:58:57.989Z"
+    "uploadedAt": "2025-11-18T09:58:57.989Z",
+    "durationSeconds": 39
   }
 ]

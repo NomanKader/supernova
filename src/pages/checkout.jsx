@@ -2,7 +2,7 @@
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Navigate, useParams, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { useAuth } from '@/components/marketing/auth-context';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { courses } from '@/data/mock-data';
+import { apiFetch, BUSINESS_NAME } from '@/config/api';
+import { formatPriceLabel } from '@/utils/course';
 
 const paymentSchema = z.object({
   method: z.enum(['wave', 'kpay']),
@@ -28,9 +29,12 @@ const paymentNumbers = {
 
 export default function CheckoutPage() {
   const { courseId } = useParams();
-  const { isAuthenticated, recordPurchase } = useAuth();
+  const location = useLocation();
+  const { isAuthenticated, recordPurchase, user } = useAuth();
   const navigate = useNavigate();
-  const course = courses.find((item) => item.id === courseId);
+  const [course, setCourse] = React.useState(null);
+  const [courseLoading, setCourseLoading] = React.useState(true);
+  const [courseError, setCourseError] = React.useState('');
 
   const form = useForm({
     resolver: zodResolver(paymentSchema),
@@ -43,7 +47,65 @@ export default function CheckoutPage() {
   });
 
   const [status, setStatus] = React.useState('');
+  const [submitError, setSubmitError] = React.useState('');
   const [copyState, setCopyState] = React.useState('');
+  const coursesEndpoint = React.useMemo(() => {
+    const params = new URLSearchParams();
+    if (BUSINESS_NAME) {
+      params.set('businessName', BUSINESS_NAME);
+    }
+    params.set('status', 'all');
+    const query = params.toString();
+    return `/api/courses${query ? `?${query}` : ''}`;
+  }, []);
+
+  React.useEffect(() => {
+    if (!courseId) {
+      setCourse(null);
+      setCourseError('Missing course identifier.');
+      setCourseLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    setCourseLoading(true);
+    setCourseError('');
+
+    async function loadCourse() {
+      try {
+        const response = await apiFetch(coursesEndpoint);
+        const payload = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+          ? response
+          : [];
+        const found = payload.find((entry) => String(entry.id) === String(courseId));
+        if (!isMounted) {
+          return;
+        }
+        if (found) {
+          setCourse(found);
+        } else {
+          setCourse(null);
+          setCourseError('We could not find that course.');
+        }
+      } catch (error) {
+        if (isMounted) {
+          setCourse(null);
+          setCourseError(error.message || 'Unable to load course details.');
+        }
+      } finally {
+        if (isMounted) {
+          setCourseLoading(false);
+        }
+      }
+    }
+
+    loadCourse();
+    return () => {
+      isMounted = false;
+    };
+  }, [courseId, coursesEndpoint]);
   const proofValue = form.watch('proof');
   const proofFile =
     proofValue instanceof FileList
@@ -52,28 +114,10 @@ export default function CheckoutPage() {
         ? proofValue[0]
         : undefined;
   const [previewUrl, setPreviewUrl] = React.useState('');
-
-  if (!course) {
-    return <Navigate to="/courses" replace />;
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const onSubmit = (values) => {
-    console.log('Payment submission', {
-      courseId,
-      method: values.method,
-      transactionId: values.transactionId,
-      notes: values.notes,
-    });
-    recordPurchase(course.id);
-    setStatus('Payment submitted! Access has been unlocked.');
-    setTimeout(() => navigate(`/courses/${course.id}`), 1200);
-  };
-
+  const redirectTarget = `${location.pathname}${location.search}${location.hash}`;
   const selectedMethod = form.watch('method');
+  const totalAmountLabel = course?.price ? formatPriceLabel(course.price) : 'MMK 149,000';
+  const currencyCode = course?.currency || 'MMK';
 
   React.useEffect(() => {
     setCopyState('');
@@ -100,6 +144,95 @@ export default function CheckoutPage() {
       URL.revokeObjectURL(objectUrl);
     };
   }, [proofFile]);
+
+  if (!isAuthenticated) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(redirectTarget)}`} replace />;
+  }
+
+  if (courseLoading) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted-foreground">
+        Loading checkout details...
+      </div>
+    );
+  }
+
+  if (!course) {
+    return (
+      <div className="mx-auto flex min-h-[60vh] w-full max-w-2xl flex-col items-center justify-center gap-4 px-4 text-center">
+        <Card className="w-full max-w-lg">
+          <CardHeader>
+            <CardTitle>Course unavailable</CardTitle>
+            <CardDescription>
+              {courseError || 'The course you attempted to enroll in may have been unpublished.'}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild className="w-full">
+              <Link to="/courses">Browse other courses</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const onSubmit = async (values) => {
+    if (!course) {
+      return;
+    }
+    setSubmitError('');
+    setStatus('');
+
+    try {
+      const formData = new FormData();
+      if (BUSINESS_NAME) {
+        formData.append('businessName', BUSINESS_NAME);
+      }
+      formData.append('courseId', course.id);
+      formData.append('courseTitle', course.title);
+      if (typeof course.price === 'number') {
+        formData.append('coursePrice', String(course.price));
+      }
+      if (currencyCode) {
+        formData.append('currency', currencyCode);
+      }
+      formData.append('amountLabel', totalAmountLabel);
+      formData.append('paymentMethod', values.method);
+      formData.append('transactionReference', values.transactionId);
+      if (values.notes) {
+        formData.append('notes', values.notes);
+      }
+      const learnerName = user?.name || user?.email || 'Learner';
+      const learnerEmail = user?.email || 'learner@supernova.dev';
+      formData.append('learnerName', learnerName);
+      formData.append('learnerEmail', learnerEmail);
+      if (user?.id) {
+        formData.append('userId', String(user.id));
+      }
+      if (proofFile) {
+        formData.append('proof', proofFile);
+      }
+
+      await apiFetch('/api/enrollments/manual', {
+        method: 'POST',
+        body: formData,
+      });
+
+      recordPurchase(course.id);
+      setStatus('Payment proof submitted. Our admissions team will review it shortly.');
+      handleClearProof();
+      form.reset({
+        method: values.method,
+        transactionId: '',
+        notes: '',
+        proof: undefined,
+      });
+      setTimeout(() => navigate(`/courses/${course.id}`), 1600);
+    } catch (error) {
+      setSubmitError(error.message || 'Unable to submit payment proof.');
+    }
+  };
 
   const handleCopy = async () => {
     const number = paymentNumbers[selectedMethod];
@@ -176,15 +309,16 @@ export default function CheckoutPage() {
         <CardHeader>
           <CardTitle>Confirm payment</CardTitle>
           <CardDescription>
-            You are unlocking <strong>{course.title}</strong> for MMK 149,000. Choose your preferred method and upload the receipt.
+            You are unlocking <strong>{course.title}</strong> for {totalAmountLabel}. Choose your preferred method and upload the receipt.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="rounded-lg border bg-muted/20 p-4 text-sm text-muted-foreground">
             <p>Course: {course.title}</p>
-            <p>Total amount: MMK 149,000</p>
+            <p>Total amount: {totalAmountLabel}</p>
           </div>
           {status ? <p className="text-sm font-medium text-primary">{status}</p> : null}
+          {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField

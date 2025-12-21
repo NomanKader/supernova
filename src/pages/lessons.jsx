@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { apiFetch, BUSINESS_NAME, API_BASE_URL } from '@/config/api';
+import { formatDurationLabel } from '@/utils/course';
 
 const MAX_LESSONS = 50;
 
@@ -34,6 +35,7 @@ function makeLessonDraft(position) {
     lessonNumber: position,
     title: '',
     description: '',
+    durationSeconds: null,
     file: null,
     progress: 0,
     status: 'pending',
@@ -209,6 +211,14 @@ export default function LessonsPage() {
         ),
       },
       {
+        header: 'Duration',
+        accessorKey: 'durationSeconds',
+        cell: ({ row }) => {
+          const label = formatDurationLabel(row.original.durationSeconds);
+          return label ? <span>{label}</span> : <span className="text-muted-foreground">—</span>;
+        },
+      },
+      {
         header: 'Uploaded',
         accessorKey: 'uploadedAt',
         cell: ({ row }) => {
@@ -224,6 +234,26 @@ export default function LessonsPage() {
     [courseLookup],
   );
 
+  const detectVideoDuration = React.useCallback((file) => {
+    if (!file) {
+      return Promise.resolve(null);
+    }
+    return new Promise((resolve) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      const objectUrl = URL.createObjectURL(file);
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(Number.isFinite(video.duration) ? video.duration : null);
+      };
+      video.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(null);
+      };
+      video.src = objectUrl;
+    });
+  }, []);
+
   const handleLessonFieldChange = (index, field, value) => {
     setLessonDrafts((previous) => {
       const next = previous.map((draft, currentIndex) =>
@@ -231,6 +261,30 @@ export default function LessonsPage() {
       );
       return next;
     });
+
+    if (field === 'file') {
+      if (value instanceof File) {
+        detectVideoDuration(value).then((seconds) => {
+          setLessonDrafts((prev) =>
+            prev.map((draft, currentIndex) =>
+              currentIndex === index
+                ? {
+                    ...draft,
+                    durationSeconds:
+                      Number.isFinite(seconds) && seconds > 0 ? Math.round(seconds) : null,
+                  }
+                : draft,
+            ),
+          );
+        });
+      } else {
+        setLessonDrafts((prev) =>
+          prev.map((draft, currentIndex) =>
+            currentIndex === index ? { ...draft, durationSeconds: null } : draft,
+          ),
+        );
+      }
+    }
   };
 
   const updateDraftStatus = (index, updates, recalcProgress = false) => {
@@ -293,6 +347,9 @@ export default function LessonsPage() {
         formData.append('lessonNumber', String(draft.lessonNumber));
         formData.append('title', draft.title);
         formData.append('description', draft.description);
+        if (Number.isFinite(draft.durationSeconds) && draft.durationSeconds > 0) {
+          formData.append('durationSeconds', String(draft.durationSeconds));
+        }
         formData.append('video', draft.file);
 
         const xhr = new XMLHttpRequest();
@@ -576,17 +633,24 @@ export default function LessonsPage() {
                         }}
                         disabled={isUploading}
                       />
-                      {draft.file ? (
-                        <p className="text-xs text-muted-foreground">
-                          {draft.file.name} ({Math.round(draft.file.size / (1024 * 1024))} MB)
-                        </p>
-                      ) : draft.status === 'success' ? (
-                        <p className="text-xs text-emerald-600">Uploaded and stored for learners.</p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground">
-                          Upload the MP4 or WebM source for this lesson.
-                        </p>
-                      )}
+                      <div className="text-xs text-muted-foreground">
+                        {draft.file ? (
+                          <p>
+                            {draft.file.name} ({Math.round(draft.file.size / (1024 * 1024))} MB)
+                          </p>
+                        ) : draft.status === 'success' ? (
+                          <p className="text-emerald-600">Uploaded and stored for learners.</p>
+                        ) : (
+                          <p>Upload the MP4 or WebM source for this lesson.</p>
+                        )}
+                        {draft.durationSeconds ? (
+                          <p className="mt-1 text-cyan-700">
+                            Detected duration: {formatDurationLabel(draft.durationSeconds)}
+                          </p>
+                        ) : (
+                          <p className="mt-1">Duration detected automatically after choosing a video.</p>
+                        )}
+                      </div>
                     </div>
                   </div>
 

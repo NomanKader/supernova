@@ -25,12 +25,12 @@ export default function PrivacyPage() {
           <p className="leading-relaxed">
             <span className="font-semibold text-slate-900">Learning activity:</span> We track cohort enrollments, course progress, completion status, assessments, and feedback to deliver personalized content and mentor support.
           </p>
-          <p className="leading-relaxed">
+          {/* <p className="leading-relaxed">
             <span className="font-semibold text-slate-900">Payment data:</span> Enrollment transactions are processed through trusted payment processors. We store only transaction identifiers, payment amounts, and status; card details never touch our servers.
-          </p>
-          <p className="leading-relaxed">
+          </p> */}
+          {/* <p className="leading-relaxed">
             <span className="font-semibold text-slate-900">Support interactions:</span> Messages, call recordings, and support tickets help our team and mentors respond effectively to your requests.
-          </p>
+          </p> */}
           <p className="leading-relaxed">
             <span className="font-semibold text-slate-900">Device & usage data:</span> We use cookies and analytics to understand how the platform is used, improve usability, and maintain security.
           </p>
@@ -66,9 +66,9 @@ export default function PrivacyPage() {
         <div className="space-y-4 text-sm text-slate-600">
           <p>You can access, update, or delete your profile information at any time from your learner dashboard.</p>
           <p>Adjust email or messaging preferences through notification settings or the unsubscribe link in emails.</p>
-          <p>Request a copy of your data or submit deletion requests by contacting <Link to="mailto:privacy@supernova.academy" className="font-semibold text-cyan-100 underline">privacy@supernova.academy</Link>.</p>
+          <p>You can delete your account information anytime from My Profile Section.</p>
           <p>Disable non-essential cookies via your browser or in-product controls. Essential cookies are required for authentication and session management.</p>
-          <p>If you reside in jurisdictions with additional privacy protections (e.g., GDPR, CCPA), you have the right to know how data is processed and can exercise applicable rights by contacting us.</p>
+          <p>If you reside in jurisdictions with additional privacy protections (e.g., GDPR, CCPA), you have the right to know how data is processed and can exercise applicable rights by contacting us at  <Link to="mailto:support@edusupernova.com" className="font-semibold text-blue-800 underline">support@edusupernova.com</Link>.</p>
         </div>
       </section>
 
@@ -96,13 +96,13 @@ export default function PrivacyPage() {
       <footer className="space-y-4 text-sm text-slate-600">
         <p>
           Have questions about privacy at Supernova LMS? Contact our Data Protection Officer at{' '}
-          <Link to="mailto:privacy@supernova.academy" className="font-semibold text-cyan-100 underline">
-            privacy@supernova.academy
+          <Link to="mailto:support@edusupernova.com" className="font-semibold text-blue-800 underline">
+            support@edusupernova.com
           </Link>{' '}
           or by mail at Supernova LMS, 2450 Learning Lane, Suite 300, San Francisco, CA 94107.
         </p>
         <p className="text-xs text-slate-500">
-          This policy is effective as of January 15, 2026 and supersedes all previous versions.
+          This policy is effective as of December 01, 2025 and supersedes all previous versions.
         </p>
       </footer>
     </div>

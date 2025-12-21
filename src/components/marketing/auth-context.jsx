@@ -62,12 +62,20 @@ export function AuthProvider({ children }) {
     const providedUser = credentials?.user || null;
     const userProfile = providedUser
       ? {
+          id: providedUser.id ?? state.user?.id ?? null,
+          tenantId: providedUser.tenantId ?? state.user?.tenantId ?? null,
+          businessName: providedUser.businessName ?? state.user?.businessName ?? null,
+          role: providedUser.role ?? state.user?.role ?? null,
           email: providedUser.email ?? 'learner@supernova.dev',
           name: providedUser.name || null,
           avatarUrl: providedUser.avatarUrl || null,
           provider: providedUser.provider || credentials?.provider || 'password',
         }
       : {
+          id: state.user?.id ?? null,
+          tenantId: state.user?.tenantId ?? null,
+          businessName: credentials?.businessName ?? state.user?.businessName ?? null,
+          role: state.user?.role ?? null,
           email: credentials?.email ?? 'learner@supernova.dev',
           name: credentials?.name || null,
           avatarUrl: credentials?.avatarUrl || null,

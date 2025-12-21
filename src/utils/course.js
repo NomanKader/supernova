@@ -98,3 +98,26 @@ export function formatPriceLabel(value) {
   }
   return "Free";
 }
+
+export function formatDurationLabel(seconds) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return null;
+  }
+  const rounded = Math.max(0, Math.round(seconds));
+  const hours = Math.floor(rounded / 3600);
+  const minutes = Math.floor((rounded % 3600) / 60);
+  const remainingSeconds = rounded % 60;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+  }
+  if (minutes > 0) {
+    parts.push(`${minutes}m`);
+  }
+  if (parts.length === 0) {
+    parts.push(`${remainingSeconds}s`);
+  } else if (hours === 0 && remainingSeconds > 0) {
+    parts.push(`${remainingSeconds}s`);
+  }
+  return parts.join(" ");
+}

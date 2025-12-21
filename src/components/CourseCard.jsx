@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { BookOpen, Calendar, Clock } from "lucide-react";
-import { formatPriceLabel } from "@/utils/course";
+import { formatPriceLabel, formatDurationLabel } from "@/utils/course";
 
 export function CourseCard({
   id,
@@ -14,7 +14,10 @@ export function CourseCard({
   price,
   originalPrice,
   hours,
+  durationSeconds,
   image,
+  enrollmentStatus,
+  enrollmentNotes,
 }) {
   const displayPrice = formatPriceLabel(price);
   const normalizedOriginalPrice =
@@ -25,6 +28,34 @@ export function CourseCard({
     Boolean(normalizedOriginalPrice) && normalizedOriginalPrice !== displayPrice;
 
   const detailPath = `/courses/${id}`;
+  const durationLabel =
+    formatDurationLabel(durationSeconds) ||
+    hours ||
+    (lessonCount ? `${lessonCount} lessons` : null);
+  const normalizedStatus = enrollmentStatus
+    ? String(enrollmentStatus).toLowerCase()
+    : null;
+  const statusStyles = {
+    approved: {
+      label: "Enrolled",
+      container: "border border-emerald-200 bg-emerald-50",
+      text: "text-emerald-700",
+      description: "Your access has been unlocked. Jump back in anytime.",
+    },
+    pending: {
+      label: "Pending verification",
+      container: "border border-amber-200 bg-amber-50",
+      text: "text-amber-800",
+      description: "We are reviewing your manual payment proof.",
+    },
+    rejected: {
+      label: "Payment rejected",
+      container: "border border-rose-200 bg-rose-50",
+      text: "text-rose-700",
+      description: "Please resubmit with the correct details.",
+    },
+  };
+  const statusConfig = normalizedStatus ? statusStyles[normalizedStatus] : null;
 
   return (
     <Link
@@ -59,7 +90,9 @@ export function CourseCard({
             <Clock className="h-4 w-4 text-cyan-500" />
             <div>
               <dt className="text-xs text-slate-500">Duration</dt>
-              <dd className="font-medium text-slate-800">{hours ?? `${lessonCount} lessons`}</dd>
+              <dd className="font-medium text-slate-800">
+                {durationLabel ?? `${lessonCount} lessons`}
+              </dd>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -93,6 +126,17 @@ export function CourseCard({
             See Details
           </span>
         </div>
+        {statusConfig ? (
+          <div className={`mt-4 rounded-2xl px-4 py-3 text-sm ${statusConfig.container}`}>
+            <p className={`font-semibold ${statusConfig.text}`}>{statusConfig.label}</p>
+            {statusConfig.description ? (
+              <p className={`text-xs ${statusConfig.text}`}>{statusConfig.description}</p>
+            ) : null}
+            {normalizedStatus === "rejected" && enrollmentNotes ? (
+              <p className="mt-1 text-xs text-rose-700">Reason: {enrollmentNotes}</p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
     </Link>
   );

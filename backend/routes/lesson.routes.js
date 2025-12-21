@@ -8,6 +8,10 @@ const {
   addLesson,
   resolveBusinessKey,
 } = require('../services/lesson.service');
+const {
+  listLessonProgress,
+  markLessonComplete,
+} = require('../services/lesson-progress.service');
 
 const MAX_VIDEO_SIZE_BYTES = 2 * 1024 * 1024 * 1024; // 2GB
 
@@ -71,11 +75,39 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+router.get('/progress', async (req, res, next) => {
+  try {
+    const data = await listLessonProgress({
+      businessName: req.query.businessName,
+      tenantId: req.query.tenantId,
+      courseId: req.query.courseId,
+      learnerEmail: req.query.learnerEmail,
+      userId: req.query.userId,
+    });
+    res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/progress', async (req, res, next) => {
+  try {
+    const payload = {
+      ...req.body,
+      businessName: req.body?.businessName || req.query.businessName,
+    };
+    const record = await markLessonComplete(payload);
+    res.status(201).json({ data: record });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.post('/', upload.single('video'), async (req, res, next) => {
   try {
     const { businessName, courseId } = buildUploadContext(req);
 
-    const { lessonNumber, title, description } = req.body;
+    const { lessonNumber, title, description, durationSeconds } = req.body;
     if (!courseId) {
       return res.status(400).json({ error: 'courseId query parameter is required.' });
     }
@@ -89,6 +121,7 @@ router.post('/', upload.single('video'), async (req, res, next) => {
       lessonNumber,
       title,
       description,
+      durationSeconds,
       file: req.file,
     });
 

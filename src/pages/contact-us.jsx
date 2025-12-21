@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/marketing/auth-context';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
@@ -96,6 +97,12 @@ const defaultValues = {
 };
 
 export default function ContactUsPage() {
+  const { isAuthenticated, user } = useAuth();
+  const hideFaq =
+    isAuthenticated && typeof user?.email === 'string'
+      ? user.email.toLowerCase() === 'dev.pyaephyoswe@gmail.com'
+      : false;
+
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues,
@@ -335,29 +342,31 @@ export default function ContactUsPage() {
         </div>
       </section>
 
-      <section className="bg-white">
-        <div className="mx-auto max-w-5xl px-4 pb-20 pt-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-semibold tracking-tight">Frequently Asked Questions</h2>
-            <p className="mt-3 text-base text-muted-foreground">
-              Quick answers to common questions about our platform and courses.
-            </p>
+      {hideFaq ? null : (
+        <section className="bg-white">
+          <div className="mx-auto max-w-5xl px-4 pb-20 pt-8">
+            <div className="text-center">
+              <h2 className="text-3xl font-semibold tracking-tight">Frequently Asked Questions</h2>
+              <p className="mt-3 text-base text-muted-foreground">
+                Quick answers to common questions about our platform and courses.
+              </p>
+            </div>
+            <div className="mt-12 space-y-4">
+              {faqItems.map(({ question, answer }) => (
+                <Card
+                  key={question}
+                  className="border border-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                >
+                  <CardHeader className="space-y-2">
+                    <CardTitle className="text-lg">{question}</CardTitle>
+                    <CardDescription className="text-sm leading-relaxed text-slate-600">{answer}</CardDescription>
+                  </CardHeader>
+                </Card>
+              ))}
+            </div>
           </div>
-          <div className="mt-12 space-y-4">
-            {faqItems.map(({ question, answer }) => (
-              <Card
-                key={question}
-                className="border border-slate-100 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-              >
-                <CardHeader className="space-y-2">
-                  <CardTitle className="text-lg">{question}</CardTitle>
-                  <CardDescription className="text-sm leading-relaxed text-slate-600">{answer}</CardDescription>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
     </div>
   );
 }

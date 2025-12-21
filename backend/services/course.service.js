@@ -5,6 +5,7 @@ const { randomUUID } = require('crypto');
 const assetsDir = path.join(__dirname, '..', 'assets');
 const courseImagesDir = path.join(assetsDir, 'courses');
 const dataFile = path.join(assetsDir, 'courses.json');
+const { countLessonsByCourse } = require('./lesson.service');
 
 async function ensureStorage() {
   await fs.mkdir(courseImagesDir, { recursive: true });
@@ -57,11 +58,33 @@ function normalizeStatus(value, fallback = 'inactive') {
 
 async function listCourses(options = {}) {
   const courses = await readCourses();
-  const normalized = courses.map((course) => ({
-    ...course,
-    price: normalizePrice(course.price),
-    status: normalizeStatus(course.status, 'inactive'),
-  }));
+  let lessonCounts = null;
+  try {
+    lessonCounts = await countLessonsByCourse(options.businessName);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.warn('Failed to count lessons for courses', error);
+    lessonCounts = null;
+  }
+
+  const normalized = courses.map((course) => {
+    const aggregate = lessonCounts ? lessonCounts.get(String(course.id)) : null;
+    const lessonCount =
+      aggregate && typeof aggregate.count === 'number'
+        ? aggregate.count
+        : course.lessons ?? 0;
+    const durationSeconds =
+      aggregate && typeof aggregate.durationSeconds === 'number'
+        ? aggregate.durationSeconds
+        : course.durationSeconds ?? 0;
+    return {
+      ...course,
+      price: normalizePrice(course.price),
+      status: normalizeStatus(course.status, 'inactive'),
+      lessons: lessonCount,
+      durationSeconds,
+    };
+  });
 
   const { status } = options;
   if (!status || status === 'active') {
@@ -85,6 +108,7 @@ async function createCourse(payload) {
     level: payload.level || 'beginner',
     status: normalizeStatus(payload.status, 'active'),
     lessons: payload.lessons ?? 0,
+    durationSeconds: payload.durationSeconds ?? 0,
     enrollments: payload.enrollments ?? 0,
     updatedAt: timestamp,
     createdAt: timestamp,
@@ -134,6 +158,10 @@ async function updateCourse(courseId, payload) {
     level: payload.level ?? existing.level,
     status: normalizeStatus(payload.status ?? existing.status, existing.status),
     lessons: payload.lessons ?? existing.lessons,
+    durationSeconds:
+      payload.durationSeconds !== undefined && payload.durationSeconds !== null
+        ? payload.durationSeconds
+        : existing.durationSeconds ?? 0,
     enrollments: payload.enrollments ?? existing.enrollments,
     price: normalizePrice(payload.price ?? existing.price),
     imageUrl: nextImageUrl,

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "21955341-6354-408d-8a45-fc4e489a0d75",
+    "courseId": "a8eea30e-4032-4387-a949-b0fc3e1ad160",
+    "prompt": "In React, what is JSX?",
+    "explanation": "",
+    "choices": [
+      {
+        "id": "aae6576f-2960-4ddf-bcd0-a7f71cc6184c",
+        "text": "A JavaScript extension for building backend logic",
+        "isCorrect": false
+      },
+      {
+        "id": "0fb6f926-857b-48df-9c70-10d81f583e0f",
+        "text": "A way to write HTML inside JavaScript",
+        "isCorrect": true
+      },
+      {
+        "id": "360f7f72-8f3f-4e17-8dec-0a816be5ba33",
+        "text": "A CSS preprocessor",
+        "isCorrect": false
+      },
+      {
+        "id": "75ce8414-7f79-4f59-b3f5-106e7f87018b",
+        "text": "A function used to change the DOM",
+        "isCorrect": false
+      }
+    ],
+    "correctChoiceId": "0fb6f926-857b-48df-9c70-10d81f583e0f",
+    "createdAt": "2025-12-21T18:53:27.671Z",
+    "updatedAt": "2025-12-21T18:53:27.671Z"
+  },
+  {
+    "id": "5f45d41c-a82d-4968-9f6b-e58ecb8e9377",
+    "courseId": "a8eea30e-4032-4387-a949-b0fc3e1ad160",
+    "prompt": "Which of the following is used to update the state of a React component?",
+    "explanation": "",
+    "choices": [
+      {
+        "id": "8aecaff7-b377-45db-8e93-07ead4b17f0d",
+        "text": "setState()",
+        "isCorrect": true
+      },
+      {
+        "id": "cfe586f0-cb06-4b0a-9020-7633bf570cd3",
+        "text": "useState()",
+        "isCorrect": false
+      },
+      {
+        "id": "775d0a05-4d39-45c8-a038-f729710861f9",
+        "text": "getState()",
+        "isCorrect": false
+      },
+      {
+        "id": "cad5c04e-10bb-4fbc-8eec-13165847bf1d",
+        "text": "updateState()",
+        "isCorrect": false
+      }
+    ],
+    "correctChoiceId": "8aecaff7-b377-45db-8e93-07ead4b17f0d",
+    "createdAt": "2025-12-21T18:52:30.904Z",
+    "updatedAt": "2025-12-21T18:52:30.904Z"
+  },
+  {
+    "id": "ad229861-8cce-4bda-82eb-19829400b023",
+    "courseId": "a8eea30e-4032-4387-a949-b0fc3e1ad160",
+    "prompt": "What is React?",
+    "explanation": "",
+    "choices": [
+      {
+        "id": "76908b99-e721-4f7c-ad1a-1aeebd21f756",
+        "text": "A database management system",
+        "isCorrect": false
+      },
+      {
+        "id": "88c55a4e-2f4c-4651-95ec-63c17500ec30",
+        "text": "A JavaScript library for building user interfaces",
+        "isCorrect": true
+      },
+      {
+        "id": "99f08fc5-a473-4603-a110-75c5fd6c4258",
+        "text": "A CSS framework",
+        "isCorrect": false
+      }
+    ],
+    "correctChoiceId": "88c55a4e-2f4c-4651-95ec-63c17500ec30",
+    "createdAt": "2025-12-21T18:09:03.250Z",
+    "updatedAt": "2025-12-21T18:09:03.250Z"
+  }
+]

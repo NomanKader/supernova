@@ -68,7 +68,7 @@ router.get('/', async (req, res, next) => {
       includeAll: true,
       defaultStatus: 'active',
     });
-    const courses = await listCourses({ status });
+    const courses = await listCourses({ status, businessName: req.query.businessName });
     res.json({ data: courses });
   } catch (error) {
     next(error);

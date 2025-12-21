@@ -69,33 +69,6 @@ const completionByCourse = courses.map((course) => {
 const averageProgress = rows.reduce((acc, row) => acc + row.progress, 0) / Math.max(rows.length, 1);
 const completionRate = rows.filter((row) => row.progress >= 100).length / Math.max(rows.length, 1);
 
-const stageLabels = ['Orientation', 'Core lessons', 'Projects', 'Assessment'];
-const lessonStageByCourse = courses.map((course) => {
-  const related = rows.filter((row) => row.course === course.title);
-  const averagePercent = related.length
-    ? related.reduce((total, current) => total + current.progress, 0) / related.length
-    : 0;
-  const stageSpan = 100 / stageLabels.length;
-
-  const stages = stageLabels.map((label, index) => {
-    const normalized = Math.max(0, Math.min(1, (averagePercent - index * stageSpan) / stageSpan));
-    const progress = Math.round(normalized * 100);
-    const status = progress >= 100 ? 'completed' : progress > 0 ? 'in-progress' : 'pending';
-    return {
-      label,
-      progress,
-      status,
-    };
-  });
-
-  return {
-    id: course.id,
-    title: course.title,
-    averagePercent: Math.round(averagePercent),
-    stages,
-  };
-});
-
 export default function ProgressPage() {
   return (
     <div className="space-y-6">
@@ -137,43 +110,6 @@ export default function ProgressPage() {
             <CardDescription>Courses with at least one tracked learner</CardDescription>
           </CardContent>
         </Card>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        {lessonStageByCourse.map((item) => (
-          <Card key={item.id}>
-            <CardHeader className="flex flex-col gap-1 pb-4">
-              <CardTitle>{item.title}</CardTitle>
-              <CardDescription>Avg learner progress {item.averagePercent}%</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {item.stages.map((stage) => (
-                <div key={stage.label} className="rounded-2xl border border-muted bg-muted/40 p-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground">{stage.label}</span>
-                    <StatusBadge status={stage.status} />
-                  </div>
-                  <ProgressBar value={stage.progress} className="mt-2 h-2" />
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-2">
-        {completionByCourse.map((item) => (
-          <Card key={item.course}>
-            <CardHeader>
-              <CardTitle>{item.course}</CardTitle>
-              <CardDescription>{item.learners} learners</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <ProgressBar value={item.completion} className="h-2" />
-              <p className="text-sm text-muted-foreground">{item.completion}% completion</p>
-            </CardContent>
-          </Card>
-        ))}
       </section>
 
       <Card>
