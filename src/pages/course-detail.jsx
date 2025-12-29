@@ -75,6 +75,7 @@ export default function CourseDetailPage() {
   const [enrollmentLoading, setEnrollmentLoading] = React.useState(false);
   const [enrollmentError, setEnrollmentError] = React.useState('');
   const [activeLesson, setActiveLesson] = React.useState(null);
+  const [isLessonPlayerOpen, setLessonPlayerOpen] = React.useState(false);
   const [lessonProgress, setLessonProgress] = React.useState([]);
   const [progressLoading, setProgressLoading] = React.useState(false);
   const [progressError, setProgressError] = React.useState('');
@@ -106,6 +107,30 @@ export default function CourseDetailPage() {
         '',
     );
   }, [activeLesson]);
+
+  const openLessonPlayer = React.useCallback(
+    (lesson, resolvedVideoUrl) => {
+      if (!lesson || !resolvedVideoUrl) {
+        return;
+      }
+      setActiveLesson((previous) => {
+        const nextIdentifier = resolveLessonIdentifier(lesson);
+        const previousIdentifier = resolveLessonIdentifier(previous);
+        if (
+          previous &&
+          previousIdentifier &&
+          nextIdentifier &&
+          previousIdentifier === nextIdentifier &&
+          previous.resolvedVideoUrl === resolvedVideoUrl
+        ) {
+          return previous;
+        }
+        return { ...lesson, resolvedVideoUrl };
+      });
+      setLessonPlayerOpen(true);
+    },
+    [],
+  );
 
   const querySuffix = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -788,6 +813,7 @@ export default function CourseDetailPage() {
   React.useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
     setActiveLesson(null);
+    setLessonPlayerOpen(false);
     setSelectedAnswers({});
     setAssessmentNotice("");
     setAssessmentSubmitError("");
@@ -987,10 +1013,10 @@ export default function CourseDetailPage() {
                         </div>
                         <div className="flex flex-wrap items-center justify-between gap-3">
                           {canWatchLesson ? (
-                            <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                               <button
                                 type="button"
-                                onClick={() => setActiveLesson({ ...lesson, resolvedVideoUrl })}
+                                onClick={() => openLessonPlayer(lesson, resolvedVideoUrl)}
                                 className="inline-flex items-center rounded-full bg-blue-600 px-6 py-2 text-sm font-semibold uppercase tracking-wide text-white shadow-sm transition hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
                               >
                                 <PlayCircle className="mr-2 h-5 w-5" />
@@ -1169,14 +1195,15 @@ export default function CourseDetailPage() {
         </section>
       </main>
       <Dialog
-        open={Boolean(activeLesson)}
+        open={Boolean(isLessonPlayerOpen && activeLesson)}
         onOpenChange={(open) => {
-          if (!open) {
-            setActiveLesson(null);
+          setLessonPlayerOpen(open);
+          if (!open && videoRef.current) {
+            videoRef.current.pause();
           }
         }}
       >
-        <DialogContent className="sm:max-w-4xl">
+        <DialogContent forceMount className="sm:max-w-4xl">
           <DialogHeader>
             <DialogTitle>{activeLesson?.title || "Lesson player"}</DialogTitle>
             <DialogDescription className="text-sm text-slate-500">

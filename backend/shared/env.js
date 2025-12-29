@@ -24,6 +24,20 @@ function loadConfig() {
     return Number.isNaN(parsed) ? null : parsed;
   };
 
+  const parseBoolean = (value, defaultValue = false) => {
+    if (value === undefined || value === null) {
+      return defaultValue;
+    }
+    const normalized = String(value).trim().toLowerCase();
+    if (normalized === 'true') {
+      return true;
+    }
+    if (normalized === 'false') {
+      return false;
+    }
+    return defaultValue;
+  };
+
   const normalizeString = (value) => {
     if (typeof value !== 'string') {
       return null;
@@ -63,6 +77,19 @@ function loadConfig() {
     supportEmail: normalizeString(process.env.SUPPORT_EMAIL) || 'support@edusupernova.com',
     inviteExpiryHours: parseInt(process.env.INVITE_EXPIRY_HOURS, 10) || 72,
     googleClientId: normalizeString(process.env.GOOGLE_CLIENT_ID) || null,
+    lessonStorageDriver: normalizeString(process.env.LESSON_STORAGE_DRIVER) || 'local',
+    awsRegion: normalizeString(process.env.AWS_REGION) || null,
+    lessonsS3Bucket: normalizeString(process.env.LESSONS_S3_BUCKET) || null,
+    lessonsS3Prefix: normalizeString(process.env.LESSONS_S3_PREFIX) || null,
+    lessonsCdnBaseUrl: normalizeString(process.env.LESSONS_CDN_BASE_URL) || null,
+    awsAccessKeyId: normalizeString(process.env.AWS_ACCESS_KEY_ID) || null,
+    awsSecretAccessKey: normalizeString(process.env.AWS_SECRET_ACCESS_KEY) || null,
+    lessonTranscodeEnabled: parseBoolean(process.env.LESSON_TRANSCODE_ENABLED, false),
+    lessonTranscodePreset: normalizeString(process.env.LESSON_TRANSCODE_PRESET) || 'veryfast',
+    lessonTranscodeMaxWidth: parseInt(process.env.LESSON_TRANSCODE_MAX_WIDTH, 10) || 1280,
+    lessonTranscodeVideoBitrateKbps: parseInt(process.env.LESSON_TRANSCODE_VIDEO_BITRATE, 10) || 4500,
+    lessonTranscodeAudioBitrateKbps: parseInt(process.env.LESSON_TRANSCODE_AUDIO_BITRATE, 10) || 160,
+    lessonTranscodeFfmpegPath: normalizeString(process.env.FFMPEG_PATH) || null,
   };
 
   return cachedConfig;

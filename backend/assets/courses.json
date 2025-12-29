@@ -1,5 +1,24 @@
 [
   {
+    "id": "bfae4543-f17f-4c7d-86cb-f23ba6b3c827",
+    "title": "Forex Trading (A-Z) - Beginner",
+    "description": "By completing the Forex Trading (A–Z) – Beginner course, learners will gain a clear understanding of how the forex market works, including currency pairs, market analysis, and basic trading strategies. They will be able to confidently place trades, manage risk, and build a strong foundation to progress toward intermediate and advanced forex trading.",
+    "categoryId": "4",
+    "instructorIds": [
+      "24"
+    ],
+    "level": "beginner",
+    "status": "active",
+    "lessons": 0,
+    "durationSeconds": 0,
+    "enrollments": 0,
+    "updatedAt": "2025-12-28T20:39:13.187Z",
+    "createdAt": "2025-12-28T12:20:27.101Z",
+    "price": 0,
+    "imageUrl": "/assets/courses/image-1766954353151.png",
+    "imageFilename": "image-1766954353151.png"
+  },
+  {
     "id": "a8eea30e-4032-4387-a949-b0fc3e1ad160",
     "title": "React Basic Course",
     "description": "Course Description\r\nTesting",

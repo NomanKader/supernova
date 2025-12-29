@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AlertCircle, CheckCircle2, CloudUpload, Loader2, Plus } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CloudUpload, Loader2, Plus, Trash2 } from 'lucide-react';
 
 import { DataTable } from '@/components/data-table';
 import { PageHeader } from '@/components/layout/page-header';
@@ -29,6 +29,7 @@ import { apiFetch, BUSINESS_NAME, API_BASE_URL } from '@/config/api';
 import { formatDurationLabel } from '@/utils/course';
 
 const MAX_LESSONS = 50;
+const DIRECT_UPLOAD_DEFAULT_PART_SIZE = 15 * 1024 * 1024;
 
 function makeLessonDraft(position) {
   return {
@@ -51,7 +52,9 @@ function rebuildLessonDrafts(existing, desiredCount) {
     if (existing[index]) {
       next.push({
         ...existing[index],
-        lessonNumber: index + 1,
+        lessonNumber: Number.isFinite(existing[index].lessonNumber)
+          ? existing[index].lessonNumber
+          : index + 1,
       });
     } else {
       next.push(makeLessonDraft(index + 1));
@@ -90,6 +93,9 @@ export default function LessonsPage() {
   const [overallProgress, setOverallProgress] = React.useState(0);
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadSuccess, setUploadSuccess] = React.useState(false);
+  const directUploadSupportedRef = React.useRef(true);
+  const [deletingLessonId, setDeletingLessonId] = React.useState(null);
+  const [deleteError, setDeleteError] = React.useState(null);
 
   const querySuffix = React.useMemo(() => {
     const params = new URLSearchParams();
@@ -176,6 +182,46 @@ export default function LessonsPage() {
     return map;
   }, [courses]);
 
+  const buildLessonDeletePath = React.useCallback(
+    (lessonId) => {
+      const params = new URLSearchParams();
+      if (BUSINESS_NAME) {
+        params.set('businessName', BUSINESS_NAME);
+      }
+      const query = params.toString();
+      return `/api/lessons/${lessonId}${query ? `?${query}` : ''}`;
+    },
+    [],
+  );
+
+  const handleDeleteLesson = React.useCallback(
+    async (lessonId) => {
+      if (!lessonId) {
+        return;
+      }
+      const confirmed =
+        typeof window === 'undefined'
+          ? true
+          : window.confirm('Delete this lesson? This will remove the video from storage.');
+      if (!confirmed) {
+        return;
+      }
+      setDeleteError(null);
+      setDeletingLessonId(lessonId);
+      try {
+        await apiFetch(buildLessonDeletePath(lessonId), {
+          method: 'DELETE',
+        });
+        await loadLessons();
+      } catch (error) {
+        setDeleteError(error.message || 'Failed to delete lesson.');
+      } finally {
+        setDeletingLessonId(null);
+      }
+    },
+    [buildLessonDeletePath, loadLessons],
+  );
+
   const columns = React.useMemo(
     () => [
       {
@@ -215,7 +261,7 @@ export default function LessonsPage() {
         accessorKey: 'durationSeconds',
         cell: ({ row }) => {
           const label = formatDurationLabel(row.original.durationSeconds);
-          return label ? <span>{label}</span> : <span className="text-muted-foreground">—</span>;
+          return label ? <span>{label}</span> : <span className="text-muted-foreground">-</span>;
         },
       },
       {
@@ -230,8 +276,32 @@ export default function LessonsPage() {
           return Number.isNaN(parsed.getTime()) ? '-' : parsed.toLocaleString();
         },
       },
+      {
+        header: 'Actions',
+        id: 'actions',
+        cell: ({ row }) => (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDeleteLesson(row.original.id)}
+            disabled={deletingLessonId === row.original.id}
+          >
+            {deletingLessonId === row.original.id ? (
+              <>
+                <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <Trash2 className="mr-1 h-4 w-4" />
+                Delete
+              </>
+            )}
+          </Button>
+        ),
+      },
     ],
-    [courseLookup],
+    [courseLookup, handleDeleteLesson, deletingLessonId],
   );
 
   const detectVideoDuration = React.useCallback((file) => {
@@ -287,6 +357,15 @@ export default function LessonsPage() {
     }
   };
 
+  const handleLessonNumberChange = (index, value) => {
+    const parsed = Number(value);
+    if (Number.isNaN(parsed)) {
+      return;
+    }
+    const clamped = Math.min(Math.max(parsed, 1), MAX_LESSONS);
+    handleLessonFieldChange(index, 'lessonNumber', clamped);
+  };
+
   const updateDraftStatus = (index, updates, recalcProgress = false) => {
     setLessonDrafts((previous) => {
       const next = previous.map((draft, currentIndex) =>
@@ -327,22 +406,22 @@ export default function LessonsPage() {
     }
   };
 
-  const buildLessonUploadUrl = React.useCallback(
-    (courseId) => {
-      const params = new URLSearchParams();
+  const buildLessonsApiUrl = React.useCallback((courseId, path) => {
+    const params = new URLSearchParams();
+    if (courseId) {
       params.set('courseId', courseId);
-      if (BUSINESS_NAME) {
-        params.set('businessName', BUSINESS_NAME);
-      }
-      return `${API_BASE_URL}/api/lessons?${params.toString()}`;
-    },
-    [],
-  );
+    }
+    if (BUSINESS_NAME) {
+      params.set('businessName', BUSINESS_NAME);
+    }
+    const query = params.toString();
+    return `${API_BASE_URL}/api/lessons${path}${query ? `?${query}` : ''}`;
+  }, []);
 
-  const uploadLesson = React.useCallback(
+  const uploadLessonLegacy = React.useCallback(
     (courseId, draft, index) =>
       new Promise((resolve, reject) => {
-        const url = buildLessonUploadUrl(courseId);
+        const url = buildLessonsApiUrl(courseId, '');
         const formData = new FormData();
         formData.append('lessonNumber', String(draft.lessonNumber));
         formData.append('title', draft.title);
@@ -384,7 +463,124 @@ export default function LessonsPage() {
 
         xhr.send(formData);
       }),
-    [buildLessonUploadUrl],
+    [buildLessonsApiUrl, updateDraftStatus],
+  );
+
+  const uploadLesson = React.useCallback(
+    async (courseId, draft, index) => {
+      if (!directUploadSupportedRef.current) {
+        return uploadLessonLegacy(courseId, draft, index);
+      }
+
+      let session = null;
+      try {
+        const initResponse = await apiFetch(buildLessonsApiUrl(courseId, '/uploads/direct/initiate'), {
+          method: 'POST',
+          body: JSON.stringify({
+            fileName: draft.file.name,
+            contentType: draft.file.type || 'application/octet-stream',
+            fileSize: draft.file.size,
+          }),
+        });
+        session = initResponse?.data || initResponse;
+        if (!session?.uploadId || !session?.key) {
+          throw new Error('Unable to initiate upload.');
+        }
+
+        const partSize = session.partSizeBytes || DIRECT_UPLOAD_DEFAULT_PART_SIZE;
+        const totalBytes = draft.file.size;
+        const totalParts = Math.max(1, Math.ceil(totalBytes / partSize));
+        const parts = [];
+        let uploadedBytes = 0;
+
+        for (let partNumber = 1; partNumber <= totalParts; partNumber += 1) {
+          const start = (partNumber - 1) * partSize;
+          const end = Math.min(start + partSize, totalBytes);
+          const blob = draft.file.slice(start, end);
+
+          const partUrlResponse = await apiFetch(
+            buildLessonsApiUrl(courseId, '/uploads/direct/part-url'),
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                uploadId: session.uploadId,
+                key: session.key,
+                partNumber,
+              }),
+            },
+          );
+          const partUrlPayload = partUrlResponse?.data || partUrlResponse;
+          if (!partUrlPayload?.url) {
+            throw new Error('Failed to obtain upload URL.');
+          }
+
+          const uploadResponse = await fetch(partUrlPayload.url, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': draft.file.type || 'application/octet-stream',
+            },
+            body: blob,
+          });
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload part ${partNumber}.`);
+          }
+          const rawEtag = uploadResponse.headers.get('etag');
+          if (!rawEtag) {
+            throw new Error(`Upload part ${partNumber} missing ETag.`);
+          }
+          const eTag = rawEtag.replace(/"/g, '');
+          parts.push({ ETag: eTag, PartNumber: partNumber });
+          uploadedBytes += blob.size;
+          const percent = Math.round((uploadedBytes / totalBytes) * 100);
+          updateDraftStatus(index, { progress: percent, status: 'uploading' }, true);
+        }
+
+        await apiFetch(buildLessonsApiUrl(courseId, '/uploads/direct/complete'), {
+          method: 'POST',
+          body: JSON.stringify({
+            uploadId: session.uploadId,
+            key: session.key,
+            parts,
+          }),
+        });
+
+        const finalizeResponse = await apiFetch(buildLessonsApiUrl(courseId, '/direct'), {
+          method: 'POST',
+          body: JSON.stringify({
+            lessonNumber: draft.lessonNumber,
+            title: draft.title,
+            description: draft.description,
+            durationSeconds: draft.durationSeconds,
+            videoStorageKey: session.key,
+            videoFilename: session.filename || draft.file.name,
+            mimeType: draft.file.type || 'video/mp4',
+            sizeBytes: draft.file.size,
+          }),
+        });
+
+        return finalizeResponse;
+      } catch (error) {
+        if (session?.uploadId && session?.key) {
+          await apiFetch(buildLessonsApiUrl(courseId, '/uploads/direct/abort'), {
+            method: 'POST',
+            body: JSON.stringify({
+              uploadId: session.uploadId,
+              key: session.key,
+            }),
+          }).catch(() => {});
+        }
+        const normalizedMessage = (error?.message || '').toLowerCase();
+        if (
+          normalizedMessage.includes('direct uploads require') ||
+          normalizedMessage.includes('lessons_s3_bucket')
+        ) {
+          directUploadSupportedRef.current = false;
+          return uploadLessonLegacy(courseId, draft, index);
+        }
+        throw error;
+      }
+    },
+    [buildLessonsApiUrl, updateDraftStatus, uploadLessonLegacy],
   );
 
   const handleUploadLessons = async (event) => {
@@ -478,6 +674,14 @@ export default function LessonsPage() {
           </div>
           <Badge variant="secondary">{lessons.length} total</Badge>
         </header>
+        {deleteError ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            <span>{deleteError}</span>
+            <Button variant="outline" size="sm" onClick={() => setDeleteError(null)}>
+              Dismiss
+            </Button>
+          </div>
+        ) : null}
         {lessonsError ? (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/20 bg-destructive/10 p-3 text-sm text-destructive">
             <span>{lessonsError}</span>
@@ -594,6 +798,20 @@ export default function LessonsPage() {
                   </div>
 
                   <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Lesson number</label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={MAX_LESSONS}
+                        value={draft.lessonNumber ?? index + 1}
+                        onChange={(event) => handleLessonNumberChange(index, event.target.value)}
+                        disabled={isUploading}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Determines lesson order for learners.
+                      </p>
+                    </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Title</label>
                       <Input
