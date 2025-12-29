@@ -8,7 +8,7 @@ import { useAuth } from '@/components/marketing/auth-context';
 
 const navItems = [
   { label: 'Home', to: '/' },
-  // { label: 'Courses', to: '/courses' },
+  { label: 'Courses', to: '/courses' },
   { label: 'About', to: '/about-us' },
   { label: 'Contact', to: '/contact-us' },
   // { label: 'Promotions', to: '/promotions' },
@@ -59,8 +59,7 @@ export function NavigationBarComponent() {
           ))}
         </nav>
 
-        {/* Auth shortcuts hidden to streamline App Store build */}
-        {/* <div className="hidden items-center gap-6 md:flex">
+        <div className="hidden items-center gap-6 md:flex">
           {isAuthenticated ? (
             <>
               <Link
@@ -89,19 +88,11 @@ export function NavigationBarComponent() {
               </div>
             </>
           ) : (
-            <>
-              <Link to="/login" className="text-sm font-semibold text-cyan-600 transition hover:text-blue-600">
-                Sign In
-              </Link>
-              <Link
-                to="/get-started"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
-              >
-                Get Started
-              </Link>
-            </>
+            <Link to="/login" className="text-sm font-semibold text-cyan-600 transition hover:text-blue-600">
+              Sign In
+            </Link>
           )}
-        </div> */}
+        </div>
 
         <button
           type="button"
@@ -131,8 +122,7 @@ export function NavigationBarComponent() {
                 {item.label}
               </NavLink>
             ))}
-            {/* Mobile auth actions temporarily hidden for App Store build */}
-            {/* <div className="mt-3 flex flex-col gap-2">
+            <div className="mt-3 flex flex-col gap-2">
               {isAuthenticated ? (
                 <>
                   <div className="flex items-center gap-3 rounded-lg border border-cyan-100 bg-cyan-50/40 px-3 py-2">
@@ -160,24 +150,15 @@ export function NavigationBarComponent() {
                   </button>
                 </>
               ) : (
-                <>
-                  <Link
-                    to="/login"
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/get-started"
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:from-cyan-600 hover:to-blue-700"
-                  >
-                    Get Started
-                  </Link>
-                </>
+                <Link
+                  to="/login"
+                  onClick={() => setOpen(false)}
+                  className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
+                >
+                  Sign In
+                </Link>
               )}
-            </div> */}
+            </div>
           </nav>
         </div>
       ) : null}

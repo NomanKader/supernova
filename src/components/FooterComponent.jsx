@@ -9,12 +9,12 @@ const quickLinks = [
   { label: "Contact", to: "/contact-us" },
 ];
 
-// const programs = [
-//   { label: "Promotions", to: "/promotions" },
-//   { label: "Affiliate Program", to: "/affiliate-program" },
-//   { label: "Student Discounts", to: "/promotions" },
-//   { label: "Corporate Training", to: "/courses" },
-// ];
+const programs = [
+  // { label: 'Promotions', to: '/promotions' },
+  // { label: 'Affiliate Program', to: '/affiliate-program' },
+  // { label: 'Student Discounts', to: '/promotions' },
+  // { label: 'Corporate Training', to: '/courses' },
+];
 
 const supportLinks = [
   { label: "Help Center", to: "/contact-us" },

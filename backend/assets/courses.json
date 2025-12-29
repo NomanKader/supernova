@@ -36,18 +36,38 @@
   {
     "id": "fbe869d6-749f-4056-86c6-6d0b22b76ecd",
     "title": "Introduction to React JS",
-    "description": "Learners will have the skills and confidence to build dynamic, responsive, and modern web applications from scratch. They will understand the core concepts of React such as components, state management, hooks, and routing, as well as how to connect APIs and handle real-world data efficiently. Learners will also gain hands-on experience working with Material UI, project structuring, and best practices used in professional development environments. By the end of the course, they’ll be able to create and deploy fully functional React projects and be ready to work independently or contribute effectively as part of a development team.",
+    "description": "Learners will have the skills and confidence to build dynamic, responsive, and modern web applications from scratch. They will understand the core concepts of React such as components, state management, hooks, and routing, as well as how to connect APIs and handle real-world data efficiently. Learners will also gain hands-on experience working with Material UI, project structuring, and best practices used in professional development environments. By the end of the course, they'll be able to create and deploy fully functional React projects and be ready to work independently or contribute effectively as part of a development team.",
     "categoryId": "1",
     "instructorIds": [
       "11"
     ],
     "level": "beginner",
-    "status": "draft",
+    "status": "active",
     "lessons": 0,
     "enrollments": 0,
-    "updatedAt": "2025-10-30T03:13:02.059Z",
-    "createdAt": "2025-10-30T03:13:02.059Z",
-    "imageUrl": "/assets/courses/photo-1517430816045-df4b7de11d1d-1761793982048.avif",
-    "imageFilename": "photo-1517430816045-df4b7de11d1d-1761793982048.avif"
+    "price": 99,
+    "updatedAt": "2025-12-01T08:39:29.879Z",
+    "createdAt": "2025-11-16T07:56:21.191Z",
+    "imageUrl": "/assets/courses/chatgpt-image-nov-27-2025-02-31-59-pm-1764578369859.png",
+    "imageFilename": "chatgpt-image-nov-27-2025-02-31-59-pm-1764578369859.png"
+  },
+  {
+    "id": "bfae4543-f17f-4c7d-86cb-f23ba6b3c827",
+    "title": "Forex Trading (A-Z) - Beginner",
+    "description": "By completing the Forex Trading (A-Z) – Beginner course, learners will gain a clear understanding of how the forex market works, including currency pairs, market analysis, and basic trading strategies. They will be able to confidently place trades, manage risk, and build a strong foundation to progress toward intermediate and advanced forex trading.",
+    "categoryId": "4",
+    "instructorIds": [
+      "24"
+    ],
+    "level": "beginner",
+    "status": "active",
+    "lessons": 0,
+    "durationSeconds": 0,
+    "enrollments": 0,
+    "updatedAt": "2025-12-28T20:39:13.187Z",
+    "createdAt": "2025-12-28T12:20:27.101Z",
+    "price": 0,
+    "imageUrl": "/assets/courses/image-1766954353151.png",
+    "imageFilename": "image-1766954353151.png"
   }
 ]

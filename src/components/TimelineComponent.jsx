@@ -1,12 +1,11 @@
 import React from "react";
 
 const timelineData = [
-  { year: "2018", text: "Supernova founded with a vision to transform online education" },
-  { year: "2019", text: "Launched first 10 courses with industry expert instructors" },
-  { year: "2020", text: "Reached 10,000 students and expanded to mobile learning" },
-  { year: "2021", text: "Introduced AI-powered personalized learning paths" },
-  { year: "2022", text: "Partnered with Fortune 500 companies for corporate training" },
-  { year: "2023", text: "Achieved 50,000+ active learners and 95% completion rate" },
+{ year: '2021', text: 'Introduced AI-powered personalized learning paths.' },
+  { year: '2022', text: 'Partnered with Fortune 500 companies for corporate training.' },
+  { year: '2023', text: 'Achieved 50,000 active learners and a 95% completion rate.' },
+  { year: '2024', text: 'Start Developing best LMS website for our students.' },
+  { year: '2025', text: 'Launched website and mobile app for our edusupernova.com Version1.0 website for our students and instructors.' }
 ];
 
 export default function Timeline() {

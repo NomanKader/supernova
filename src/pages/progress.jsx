@@ -112,21 +112,6 @@ export default function ProgressPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {completionByCourse.map((item) => (
-          <Card key={item.course}>
-            <CardHeader>
-              <CardTitle>{item.course}</CardTitle>
-              <CardDescription>{item.learners} learners</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <ProgressBar value={item.completion} className="h-2" />
-              <p className="text-sm text-muted-foreground">{item.completion}% completion</p>
-            </CardContent>
-          </Card>
-        ))}
-      </section>
-
       <Card>
         <CardHeader>
           <CardTitle>Learner progress detail</CardTitle>
