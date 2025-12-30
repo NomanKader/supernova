@@ -370,6 +370,7 @@ export default function CourseDetailPage() {
     canShowEnrollButton &&
     (!normalizedEnrollmentStatus || normalizedEnrollmentStatus === 'rejected');
   const canStreamLessons = normalizedEnrollmentStatus === 'approved';
+  const showManualEnrollmentReminder = normalizedEnrollmentStatus !== 'approved';
 
   React.useEffect(() => {
     if (!canStreamLessons || !courseId || !hasLearnerIdentity) {
@@ -1175,12 +1176,17 @@ export default function CourseDetailPage() {
               </div>
             ) : null}
 
-            <div className="rounded-2xl border p-6 shadow-sm">
-              <h3 className="text-lg font-semibold">Enroll Course?</h3>
-              <p className="mt-2 text-sm text-slate-600">
-                Please come to our campus to enroll in this course. If you have any questions, feel free to reach out to us.
-              </p>
-            </div>
+            {showManualEnrollmentReminder ? (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+                <h3 className="text-lg font-semibold">Manual enrollment required</h3>
+                <p className="mt-2 text-sm text-slate-600">
+                  Please come to our campus to enroll in this course. If you have any questions, feel free to reach out to us.
+                </p>
+                <p className="mt-3 text-xs text-amber-800">
+                  Once our admin team confirms your in-person registration, they&apos;ll unlock this course for your account.
+                </p>
+              </div>
+            ) : null}
           </aside>
         </section>
       </main>
