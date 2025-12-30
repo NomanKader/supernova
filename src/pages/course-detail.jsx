@@ -356,12 +356,8 @@ export default function CourseDetailPage() {
     };
   }, [isAuthenticated, user?.email, user?.id, courseId]);
 
-  const testerEmail = 'dev.pyaephyoswe@gmail.com';
-  const normalizedTesterEmail = testerEmail.toLowerCase();
-  const isReadOnlyTester =
-    isAuthenticated && (user?.email || '').toLowerCase() === normalizedTesterEmail;
   const checkoutPath = course?.id ? `/checkout/${course.id}` : null;
-  const canShowEnrollButton = Boolean(checkoutPath && !isReadOnlyTester);
+  const canShowEnrollButton = false;
 
   const normalizedEnrollmentStatus = enrollmentStatus
     ? String(enrollmentStatus).toLowerCase()
@@ -1179,17 +1175,11 @@ export default function CourseDetailPage() {
               </div>
             ) : null}
 
-            <div className="rounded-2xl border bg-white p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900">Enroll Course?</h3>
+            <div className="rounded-2xl border p-6 shadow-sm">
+              <h3 className="text-lg font-semibold">Enroll Course?</h3>
               <p className="mt-2 text-sm text-slate-600">
                 Please come to our campus to enroll in this course. If you have any questions, feel free to reach out to us.
               </p>
-              {/* <div className="mt-4 space-y-2 text-sm text-slate-700">
-                <Link to="/contact-us" className="text-blue-600 hover:underline">
-                  Contact us
-                </Link>
-                <span>Email: support@edusupernova.com</span>
-              </div> */}
             </div>
           </aside>
         </section>

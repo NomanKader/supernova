@@ -92,12 +92,6 @@ export function NavigationBarComponent() {
               <Link to="/login" className="text-sm font-semibold text-cyan-600 transition hover:text-blue-600">
                 Sign In
               </Link>
-              <Link
-                to="/get-started"
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-lg shadow-cyan-500/30 transition hover:from-cyan-600 hover:to-blue-700"
-              >
-                Get Started
-              </Link>
             </>
           )}
         </div>
@@ -165,13 +159,6 @@ export function NavigationBarComponent() {
                     className="rounded-lg px-3 py-2 text-center text-sm font-semibold text-cyan-600 transition hover:bg-cyan-50"
                   >
                     Sign In
-                  </Link>
-                  <Link
-                    to="/get-started"
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-md transition hover:from-cyan-600 hover:to-blue-700"
-                  >
-                    Get Started
                   </Link>
                 </>
               )}

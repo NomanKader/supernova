@@ -1,7 +1,7 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, Loader2, Apple as AppleIcon } from "lucide-react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 
@@ -35,9 +35,23 @@ export default function LoginPage() {
   const { login } = useAuth();
   const googleButtonRef = React.useRef(null);
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const appleClientId = import.meta.env.VITE_APPLE_CLIENT_ID;
+  const appleScope = import.meta.env.VITE_APPLE_SCOPE || "name email";
+  const appleRedirectUri = React.useMemo(() => {
+    if (import.meta.env.VITE_APPLE_REDIRECT_URI) {
+      return import.meta.env.VITE_APPLE_REDIRECT_URI;
+    }
+    if (typeof window !== "undefined" && window.location) {
+      return `${window.location.origin}/login`;
+    }
+    return "";
+  }, []);
   const [googleReady, setGoogleReady] = React.useState(false);
   const [googleError, setGoogleError] = React.useState("");
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+  const [appleReady, setAppleReady] = React.useState(false);
+  const [appleError, setAppleError] = React.useState("");
+  const [isAppleLoading, setIsAppleLoading] = React.useState(false);
   const [formError, setFormError] = React.useState("");
   const [submitting, setSubmitting] = React.useState(false);
 
@@ -163,6 +177,52 @@ export default function LoginPage() {
     }
   }, [BUSINESS_NAME]);
 
+  const handleAppleSignIn = React.useCallback(async () => {
+    if (typeof window === "undefined" || !window.AppleID?.auth) {
+      setAppleError("Apple Sign-In is unavailable.");
+      return;
+    }
+    if (!appleReady) {
+      setAppleError("Apple Sign-In is still initializing. Please try again.");
+      return;
+    }
+
+    setIsAppleLoading(true);
+    setAppleError("");
+    try {
+      const response = await window.AppleID.auth.signIn();
+      const identityToken = response?.authorization?.id_token;
+      if (!identityToken) {
+        throw new Error("Apple did not return a valid identity token.");
+      }
+      const payload = await apiFetch("/api/auth/apple", {
+        method: "POST",
+        body: JSON.stringify({ identityToken }),
+      });
+      const profile = payload?.data || payload;
+      await syncUserDirectory(profile);
+      login({
+        user: {
+          email: profile.email,
+          name: profile.name || profile.email,
+          avatarUrl: null,
+          provider: "apple",
+        },
+        subscribe: false,
+      });
+      navigate(redirectTarget);
+    } catch (error) {
+      console.error("Apple sign-in failed", error);
+      if (error?.error === "popup_closed_by_user") {
+        setAppleError("Apple sign-in was cancelled.");
+      } else {
+        setAppleError(error.message || "Unable to sign in with Apple.");
+      }
+    } finally {
+      setIsAppleLoading(false);
+    }
+  }, [appleReady, login, navigate, redirectTarget, syncUserDirectory]);
+
   const handleGoogleCredential = React.useCallback(
     async (response) => {
       if (!response?.credential) {
@@ -223,6 +283,70 @@ export default function LoginPage() {
       width: target.offsetWidth || 320,
     });
   }, [googleReady, googleClientId, handleGoogleCredential]);
+
+  React.useEffect(() => {
+    setAppleReady(false);
+    if (!appleClientId) {
+      setAppleError("Set VITE_APPLE_CLIENT_ID to enable Sign in with Apple.");
+      return undefined;
+    }
+    if (!appleRedirectUri) {
+      setAppleError("Set VITE_APPLE_REDIRECT_URI to match your Apple configuration.");
+      return undefined;
+    }
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const initializeApple = () => {
+      try {
+        if (!window.AppleID?.auth) {
+          setAppleError("Apple Sign-In is unavailable.");
+          return;
+        }
+        window.AppleID.auth.init({
+          clientId: appleClientId,
+          redirectURI: appleRedirectUri,
+          scope: appleScope,
+          usePopup: true,
+        });
+        setAppleReady(true);
+        setAppleError("");
+      } catch (error) {
+        console.error("Failed to initialize Apple Sign-In", error);
+        setAppleError("Unable to initialize Apple Sign-In.");
+      }
+    };
+
+    const handleScriptError = () => {
+      setAppleError("Unable to load Apple Sign-In.");
+    };
+
+    if (window.AppleID?.auth) {
+      initializeApple();
+      return undefined;
+    }
+
+    let script = document.querySelector('script[data-appleid-sdk]');
+    if (script) {
+      script.addEventListener("load", initializeApple);
+      script.addEventListener("error", handleScriptError);
+    } else {
+      script = document.createElement("script");
+      script.src = "https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js";
+      script.async = true;
+      script.defer = true;
+      script.dataset.appleidSdk = "true";
+      script.addEventListener("load", initializeApple);
+      script.addEventListener("error", handleScriptError);
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      script?.removeEventListener("load", initializeApple);
+      script?.removeEventListener("error", handleScriptError);
+    };
+  }, [appleClientId, appleRedirectUri, appleScope]);
 
   return (
     <div className="flex min-h-screen w-full flex-col items-center bg-[#f3f6ff] px-4 pb-24 pt-16">
@@ -318,11 +442,34 @@ export default function LoginPage() {
                 <div ref={googleButtonRef} className="flex w-full justify-center" />
                 {isGoogleLoading ? (
                   <div className="mt-3 flex items-center justify-center gap-2 text-xs text-slate-500">
-                    Signing in with Google…
+                    Signing in with Google.
                   </div>
                 ) : null}
                 {googleError ? (
                   <p className="mt-3 text-center text-xs text-red-500">{googleError}</p>
+                ) : null}
+              </div>
+              <div className="w-full">
+                <button
+                  type="button"
+                  onClick={handleAppleSignIn}
+                  disabled={!appleReady || isAppleLoading}
+                  className="flex h-11 w-full items-center justify-center gap-2 rounded-full border border-slate-200 bg-white text-sm font-semibold text-slate-800 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isAppleLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-slate-500" />
+                      Connecting to Apple...
+                    </>
+                  ) : (
+                    <>
+                      <AppleIcon className="h-4 w-4 text-slate-900" />
+                      Sign in with Apple
+                    </>
+                  )}
+                </button>
+                {appleError ? (
+                  <p className="mt-3 text-center text-xs text-red-500">{appleError}</p>
                 ) : null}
               </div>
             </div>
@@ -339,5 +486,4 @@ export default function LoginPage() {
     </div>
   );
 }
-
 
