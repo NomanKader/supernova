@@ -75,6 +75,7 @@ function loadConfig() {
     smtpPassword: process.env.SMTP_PASSWORD || null,
     smtpFrom: process.env.SMTP_FROM || null,
     supportEmail: normalizeString(process.env.SUPPORT_EMAIL) || 'support@edusupernova.com',
+    corsAllowedOrigins: normalizeString(process.env.CORS_ALLOWED_ORIGINS) || null,
     inviteExpiryHours: parseInt(process.env.INVITE_EXPIRY_HOURS, 10) || 72,
     googleClientId: normalizeString(process.env.GOOGLE_CLIENT_ID) || null,
     appleClientId: normalizeString(process.env.APPLE_CLIENT_ID) || null,

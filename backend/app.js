@@ -12,8 +12,12 @@ function createApp() {
   const app = express();
   const config = loadConfig();
   const defaultLocalOrigins = ['http://localhost:3000', 'http://127.0.0.1:3000'];
+  const envOrigins = (config.corsAllowedOrigins || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
   const allowedOrigins = Array.from(
-    new Set([config.appUrl, ...defaultLocalOrigins].filter(Boolean)),
+    new Set([config.appUrl, ...envOrigins, ...defaultLocalOrigins].filter(Boolean)),
   );
   const corsOptions = {
     origin: allowedOrigins.length > 0 ? allowedOrigins : true,

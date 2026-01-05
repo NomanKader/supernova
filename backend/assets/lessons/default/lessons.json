@@ -10,7 +10,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 19979122,
     "sizeMB": 19.05,
-    "uploadedAt": "2025-10-30T17:16:49.857Z"
+    "uploadedAt": "2025-10-30T17:16:49.857Z",
+    "durationSeconds": 20
   },
   {
     "id": "dd2299fe-b76b-4467-bd94-5f51b5dcc52a",
@@ -23,7 +24,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 19979122,
     "sizeMB": 19.05,
-    "uploadedAt": "2025-10-30T17:16:50.201Z"
+    "uploadedAt": "2025-10-30T17:16:50.201Z",
+    "durationSeconds": 20
   },
   {
     "id": "e464eff9-14b3-4621-be02-fd81cd6d2022",
@@ -36,7 +38,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 19979122,
     "sizeMB": 19.05,
-    "uploadedAt": "2025-10-30T17:16:50.569Z"
+    "uploadedAt": "2025-10-30T17:16:50.569Z",
+    "durationSeconds": 20
   },
   {
     "id": "4f56d845-b32e-4d8a-be76-a867853982b7",
@@ -49,7 +52,8 @@
     "mimeType": "video/mp4",
     "sizeBytes": 19979122,
     "sizeMB": 19.05,
-    "uploadedAt": "2025-10-30T17:55:35.322Z"
+    "uploadedAt": "2025-10-30T17:55:35.322Z",
+    "durationSeconds": 20
   },
   {
     "id": "5decdbac-9eb5-4077-8da5-26c50187e99b",
@@ -62,6 +66,7 @@
     "mimeType": "video/mp4",
     "sizeBytes": 19979122,
     "sizeMB": 19.05,
-    "uploadedAt": "2025-10-30T17:55:35.774Z"
+    "uploadedAt": "2025-10-30T17:55:35.774Z",
+    "durationSeconds": 20
   }
 ]
